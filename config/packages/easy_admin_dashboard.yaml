@@ -1,0 +1,46 @@
+parameters:
+  easy_admin_dashboard:
+    title: "Dashboard"
+    blocks:
+      Bloc1:
+        label: ""
+        size: 12
+        css_class: primary
+        permissions: ['ROLE_USER']
+        items:
+          PracticalGuide:
+            label: "Guide pratique"
+            size: xl-3 col-lg-4 col-sm-12
+            css_class: info text-dark
+            class: App\Entity\PracticalGuide
+            controller: App\Controller\Admin\PracticalGuideCrudController
+            icon:  fas fa-address-book
+            link_label: "Voir le guide"
+      Bloc2:
+        label: "Contacts"
+        size: 12
+        css_class: primary
+        permissions: ['ROLE_USER']
+        items:
+          Contact:
+            label: "Contacts"
+            size: xl-3 col-lg-4 col-sm-12
+            css_class: primary text-dark
+            class: App\Entity\Contact
+            controller: App\Controller\Admin\ContactCrudController
+            icon:  fas fa-address-book
+            link_label: "Liste des Contacts"
+      Bloc3:
+        label: "Structure"
+        size: 12
+        css_class: primary
+        permissions: ['ROLE_USER']
+        items:
+          Structure:
+            label: "Structures"
+            size: xl-3 col-lg-4 col-sm-12
+            css_class: success text-dark
+            class: App\Entity\Structure
+            controller: App\Controller\Admin\StructureCrudController
+            icon:  fas fa-industry
+            link_label: "Liste des Structures"

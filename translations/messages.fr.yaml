@@ -1,0 +1,97 @@
+civility : Civilité
+firstname : Prénom
+lastname : Nom
+contact_details : Coordonnées
+contact_details_string : Coordonnées
+website : Site internet
+profile_types : Profil(s)
+disciplines : Discipline(s)
+discipline : Discipline
+is_workshop_artist : Artiste ateliers
+formationParticipantTypes : Participant.e formation
+is_formation_speaker : Intervenant.e de formation
+professional_notes : Notes
+personnal_email : Email perso
+professional_email : Email pro
+personnal_phone_number : Téléphone perso
+Address: Adresse
+address_street : Rue
+address_adition : Complément
+address_code : Code postal
+address_city : Ville
+address_country : Pays
+personnal_notes : Notes
+contactNewsletters : Envoi newsletter
+is_receiving_festival_program : Envoi programme festival
+festival_program_receipt_email : Email pour envoi du programme
+communication_notes : Notes
+is_festival_participant : Bénévole festival
+is_board_of_directors_member : Membre du CA
+is_organization_participant : Adhérent.e
+organization_notes : Notes
+structure_notes : Notes
+structure_type_specializations : Sous-type de structure
+name : Nom
+email : Email générique
+phone_number : Numéro de téléphone
+is_festival_organizer : Organisation d'un festival
+is_company_programmed_in_festival : Compagnie programmée dans le festival
+is_workshop_partner : Structure partenaire ateliers
+contacts : Contacts
+contact: Contact
+near_parcs : Proximité avec un parc
+structureType : Type de structure
+structure_type : Type de structure
+festival_informations : Informations du festival
+is_festival_partner : Partenaire du festival
+
+structure_newsletters : Newsletters
+festival_program_receipt_contacts : Contacts recevant le programme du festival
+code : Code
+structure_function : Fonction au sein de la structure
+contactDetailPhoneNumbers : Numéros de téléphone du contact
+contact_email : Email contact
+structure_email : Email structure
+newsletter_type : Type de newsletter
+newsletter_types : Types de newsletter
+modified_at : Modifié le
+created_at : Créé le
+Updated_at : Modifié le
+Created_at : Créé le
+updated_at :  Modifié le
+newsletter_email : Email pour envoi newsletter
+structure_address_code : 'Code postal de la/des Structure(s) associée(s)'
+structure_address_city : 'Ville de la/des Structure(s) associée(s)'
+structure_is_festival_partner: 'Structure(s) associée(s) partenaire du festival'
+structure_is_company_programmed_in_festival: 'Structure(s) associée(s) programmée au festival'
+structure_is_workshop_partner: 'Structure(s) associée(s) partenaire ateliers'
+contact_is_festival_participant: 'Contact(s) associé(s) étant bénévole au festival'
+contact_is_board_of_directors_member: 'Contact(s) associé(s) étant membre du conseil d''administration'
+contact_is_organization_participant: 'Contact(s) associé(s) étant adhérent.e'
+email_type: Email d'envoi du programme
+festival_program_is_sent: Envoi programme du festival
+contact_receiving_festival_program: Contact recevant le programme du festival
+
+Parameters: Paramètres
+Dashboard: Tableau de bord
+
+content: "Contenu"
+title: "Titre"
+
+structure: Structure
+professionnal_phone_numbers: Téléphone pro
+festival_program_receipt_address: Adresse pour envoi du programme
+
+structure_functions : Fonctions
+structures : Structures
+
+Create and inspect: Enregistrer et continuer
+Contact - Personnal: Contact - Personnel
+Contact - Professionnal: Contact - Professionnel
+Structure: Structure
+
+Festival program: Programme festival
+Festival programs: Programmes festival
+
+festival_program: Programme du festival
+is_festival_program_sent: Envoi programme du festival

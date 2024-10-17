@@ -1,0 +1,19 @@
+{% extends '@!EasyAdmin/layout.html.twig' %}
+
+{% block head_javascript %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.1.0/dist/js/tom-select.complete.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+    <script src="{{ asset('assets/js/admin.js') }}" type="module"></script>
+{% endblock head_javascript %}
+
+{% block body_javascript %}
+    {{ parent() }}
+
+{% endblock body_javascript %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
+{% endblock %}

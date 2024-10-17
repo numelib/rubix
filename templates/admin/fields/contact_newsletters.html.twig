@@ -1,0 +1,49 @@
+{% set collection = field.value %}
+
+{% for contact_newsletter in collection %}
+    <div class="form-fieldset field-form_fieldset p-2">
+        <fieldset>
+            <div class="form-fieldset-header">
+                <div class="form-fieldset-title">
+                    <span class="not-collapsible form-fieldset-title-content">
+                    #{{ loop.index }}
+                    </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field-group field-text">
+                    <div class="field-label">
+                        <div>Contact</div>
+                    </div>
+                    <div class="field-value">
+                        <span>{{ contact_newsletter.contact }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field-group field-text">
+                    <div class="field-label">
+                        <div>Type newsletter</div>
+                    </div>
+                    <div class="field-value">
+                        <ul>
+                        {% for newsletterType in contact_newsletter.newsletterTypes %}
+                            <li>{{ newsletterType }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field-group field-text">
+                    <div class="field-label">
+                        <div>Email</div>
+                    </div>
+                    <div class="field-value">
+                        <span>{{ contact_newsletter.contactEmail }}</span>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+{% endfor %}

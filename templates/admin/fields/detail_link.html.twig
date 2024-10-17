@@ -1,0 +1,6 @@
+{% set url = ea_url()
+    .setController(ea.crud.controllerFqcn)
+    .setAction('detail') 
+    .setEntityId(entity.instance.id) %}
+
+<a href="{{ url }}"> {{ attribute(entity.instance, field.property) }} </a>

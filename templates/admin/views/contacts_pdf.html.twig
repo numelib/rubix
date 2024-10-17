@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    * {
+        margin: 0;
+        font-size: 10px;
+    }
+
+    .card {
+        --padding: 3mm;
+        position: relative;
+        top: 8mm;
+        display: inline-block;
+        max-width: calc(70mm - var(--padding) * 2);
+        max-height: calc(37mm - var(--padding) * 2);
+        height: calc(37mm - var(--padding) * 2);
+        width: calc(70mm - var(--padding) * 2);
+        padding: var(--padding);
+        page-break-inside: avoid;
+        border: 1px solid grey; 
+        line-height: 1.5;
+    }
+</style>
+<body>
+    {% for contact in contacts %}
+        {% for structure in contact.structures %}
+            <div class="card">
+                <div class="card__header">
+                    <p class="card__title">{{ contact.lastname|upper }} {{ contact.firstname }}</p>
+                </div>
+                <div class="card__body">
+                    <p>{{ (contact.festivalProgramReceiptAddress != null) ? contact.festivalProgramReceiptAddress : 'Adresse d\'envoi du programme inconnue' }}</p>
+                    <p>{{ structure.name }}</p>
+                    <p>{{ structure.addressStreet == null ? 'Rue inconnue' : structure.addressStreet }}</p>
+                    <p>
+                        {{ (structure.addressCity != null) ? structure.addressCity : 'Ville inconnue' }}
+                        {{ (structure.addressCity != null and structure.addressCode != null and structure.addressCode != 0) ? structure.addressCode : 'Code postal inconnu'}}
+                    </p>
+                    <p>{{ (structure.addressCountry != null) ? structure.addressCountry : 'Pays inconnu' }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</body>
+</html>

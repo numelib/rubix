@@ -1,0 +1,24 @@
+{% block _Structure_contacts_list_widget %}
+    {% set url = ea_url()
+    .setController('App\\Controller\\Admin\\ContactCrudController')
+    .setAction('detail') %}
+    {% set choices = form.vars.choices %}
+    {% if choices|length == 0 %} 
+        <p>Aucun(e) contact(s)</p>
+    {% else %}
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                Liste des contacts
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                {% for choice in choices %}
+                    {% set url = ea_url()
+                        .setController('App\\Controller\\Admin\\ContactCrudController')
+                        .setAction('detail')
+                        .setEntityId(choice.data.id) %}
+                    <li><a class="dropdown-item" href="{{ url }}" target="_blank">{{ choice.label }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}

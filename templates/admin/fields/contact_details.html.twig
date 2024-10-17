@@ -1,0 +1,57 @@
+{% set collection = field.value %}
+
+{% for contactDetail in collection %}
+    <div class="form-fieldset field-form_fieldset p-2">
+        <fieldset>
+            <div class="form-fieldset-header">
+                <div class="form-fieldset-title">
+                    <span class="not-collapsible form-fieldset-title-content">
+                    #{{ loop.index }}
+                    </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field-group field-text">
+                    <div class="field-label">
+                        <div>Email pro</div>
+                    </div>
+                    <div class="field-value">
+                        <span>{{ contactDetail.email }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field-group field-text">
+                    <div class="field-label">
+                        <div>Structure</div>
+                    </div>
+                    <div class="field-value">
+                        <span>{{ contactDetail.structure }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field-group field-text">
+                    <div class="field-label">
+                        <div>Fonction au sein de la structure</div>
+                    </div>
+                    <div class="field-value">
+                        <span>{{ contactDetail.structureFunction }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field-group field-text">
+                    <div class="field-label">
+                        <div>Numéro(s) de téléphone</div>
+                    </div>
+                    <div class="field-value">
+                        {% for phoneNumber in contactDetail.contactDetailPhoneNumbers %}
+                            <span class="d-block">{{ phoneNumber}}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+{% endfor %}

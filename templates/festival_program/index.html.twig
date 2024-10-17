@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FestivalProgram index{% endblock %}
+
+{% block body %}
+    <h1>FestivalProgram index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Email_type</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for festival_program in festival_programs %}
+            <tr>
+                <td>{{ festival_program.id }}</td>
+                <td>{{ festival_program.emailType }}</td>
+                <td>
+                    <a href="{{ path('app_festival_program_show', {'id': festival_program.id}) }}">show</a>
+                    <a href="{{ path('app_festival_program_edit', {'id': festival_program.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_festival_program_new') }}">Create new</a>
+{% endblock %}

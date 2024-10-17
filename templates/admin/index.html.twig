@@ -1,0 +1,33 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+
+{% block content_title %}ERP 193 Soleil{% endblock %}
+
+{% block main %}
+    <nav>
+        <div class="row">
+            <h2>Général</h2>
+            <hr>
+            <div class="col-sm-6 my-2">
+                <a href="#" class="card bg-light">
+                    <div class="card-body d-flex gap-2 justify-content-between">
+                        <h5 class="card-title"><i class="fa-regular fa-file"></i> Guide pratique de remplissage des fiches</h5>
+                    </div>
+                </a>
+            </div>
+            {% for menuItem in ea.mainMenu.items %}
+                {% if menuItem.type == 'section' %}
+                    <h2 class="my-3">{{ menuItem.label }}</h2>
+                    <hr>
+                {% else %}
+                    <div class="col-sm-6 my-2">
+                        <a href="{{ menuItem.linkUrl }}" class="card bg-light">
+                            <div class="card-body d-flex gap-2 justify-content-between">
+                                <h5 class="card-title"><i class="{{ menuItem.icon }}"></i> {{ menuItem.label }}</h5>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </nav>
+{% endblock %}

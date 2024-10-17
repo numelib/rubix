@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FestivalProgram{% endblock %}
+
+{% block body %}
+    <h1>FestivalProgram</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ festival_program.id }}</td>
+            </tr>
+            <tr>
+                <th>Email_type</th>
+                <td>{{ festival_program.emailType }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_festival_program_index') }}">back to list</a>
+
+    <a href="{{ path('app_festival_program_edit', {'id': festival_program.id}) }}">edit</a>
+
+    {{ include('festival_program/_delete_form.html.twig') }}
+{% endblock %}

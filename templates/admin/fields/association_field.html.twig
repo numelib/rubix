@@ -1,0 +1,13 @@
+{% set collection = field.value %}
+
+{% if collection|length == 0%}
+    <span>Aucun(e)</span>
+{% else %}
+    <ul class="ps-3">
+        {% for entity in collection %}
+            {% if entity != null %}
+                <li>{{ entity }}</li>
+            {% endif %} 
+        {% endfor %}
+    </ul>
+{% endif %}

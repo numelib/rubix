@@ -1,0 +1,10 @@
+# config/validator/validation.yaml
+App\Entity\Contact:
+    constraints:
+        - Callback: validate
+App\Entity\Structure:
+    constraints:
+        - Callback: validate
+App\Entity\FestivalProgram:
+    constraints:
+        - Callback: validate

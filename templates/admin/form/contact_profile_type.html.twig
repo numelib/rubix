@@ -1,0 +1,37 @@
+{% block _Contact_contact_profile_widget %}
+    {{ form(form) }}
+    {% set url = ea_url()
+        .setController('App\\Controller\\App\\ContactCrudController')
+        .setAction('new')
+    %}
+    <script>
+        {# $(".contact_profile_type").on('change',function(){
+            
+        var data = {};
+        data[obj.attr('name')] = $(this).val();
+        $.ajax({
+            type: 'POST',
+            url: '{{ url|raw }}',
+            data: data,
+            success: function(html){
+                $('.discipline_type').parent().replaceWith($(html).find('.discipline_type').parent());
+            }
+        }); #}
+
+        document.querySelector('.contact_profile_type').addEventListener('change', function() {
+           updateFields()
+        })
+
+        async function updateFields() {
+            const data = {};
+            data.name = this.value;
+
+            const response = await fetch("{{ url|raw }}", { method : 'POST', body : data});
+            const html = await response.text();
+            
+            const container = document.createElement('div');
+            container.innerHtml = html;
+            document.querySelector('.discipline_type').parentElement.replaceWith(container.querySelector('.discipline_type').parentElement);
+        }
+    </script>
+{% endblock %}
