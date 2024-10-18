@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # assocrm
 
 
@@ -91,3 +92,7 @@ For open source projects, say how it is licensed.
 
 ## Project status
 If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+=======
+# rubix
+CRM for non profit organization / CRM dédié aux associations
+>>>>>>> 8803c0bc83b52730ae14bb3b4dedc1d3534c1adc
