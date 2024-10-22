@@ -304,7 +304,7 @@ class StructureCrudController extends AbstractCrudController
                             ->leftJoin('contact.contact_details', 'contact_details')
                             ->addSelect('contact_details');
 
-                        if($entity !== null && $entity instanceof Structure) {
+                        if($entity !== null && $entity->getId() !== null && $entity instanceof Structure) {
                             $queryBuilder
                                 ->leftJoin('contact_details.structure', 'structure')
                                 ->addSelect('structure')
@@ -364,25 +364,25 @@ class StructureCrudController extends AbstractCrudController
         ];
     }
 
-    public function createNewFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
-    {        
-        $builder = parent::createNewFormBuilder($entityDto, $formOptions, $context);
-        $this->extendForms($builder, $entityDto);
+    // public function createNewFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
+    // {        
+    //     $builder = parent::createNewFormBuilder($entityDto, $formOptions, $context);
+    //     $this->extendForms($builder, $entityDto);
 
-        $builder->get('newsletter_email')->resetViewTransformers();
+    //     $builder->get('newsletter_email')->resetViewTransformers();
 
-        return $builder;
-    }
+    //     return $builder;
+    // }
 
-    public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
-    {        
-        $builder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
-        $this->extendForms($builder, $entityDto);
+    // public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
+    // {        
+    //     $builder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
+    //     $this->extendForms($builder, $entityDto);
 
-        $builder->get('newsletter_email')->resetViewTransformers();
+    //     $builder->get('newsletter_email')->resetViewTransformers();
 
-        return $builder;
-    }
+    //     return $builder;
+    // }
 
     private function extendForms(FormBuilderInterface $builder, EntityDto $entityDto): void
     {
