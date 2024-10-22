@@ -67,13 +67,12 @@ $(document).ready(function () {
         // MODIFICATION DES <select> DES COORDONNEES EN TOMSELECT
 
         const structureSelects = easyAdminPage.tabs['PROFESSIONNEL'].blocks['Coordonnées'].element.querySelectorAll('[id^="Contact_contact_details_"][id$="_structure"]');
-        structureSelects.forEach((select) => new TomSelect(select));
+        structureSelects.forEach((select) =>  new TomSelect(select, {maxOptions : null}));
         
         // MODIFICATION DYNAMIQUE EMAILS
 
         const optgroups = { 'personnal' : 1, 'professional' : 2 };
         const tomselects = [
-            easyAdminPage.tabs['COMMUNICATION']?.blocks['Général']?.element?.querySelector('#Contact_festival_program_receipt_email').tomselect,
             easyAdminPage.tabs['COMMUNICATION']?.blocks['Envoi newsletters']?.element?.querySelector('#Contact_newsletter_email').tomselect
         ];
 
