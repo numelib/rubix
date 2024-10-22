@@ -306,7 +306,7 @@ class ContactCrudController extends AbstractCrudController
             FormField::addColumn(6),
             FormField::addFieldset('Général'),
             BooleanField::new('is_receiving_festival_program', $this->translator->trans('is_receiving_festival_program'))
-                ->onlyOnForms(),
+                ->hideOnIndex(),
             TextEditorField::new('communication_notes', $this->translator->trans('communication_notes'))
                 ->onlyOnForms(),
             TextField::new('communication_notes', $this->translator->trans('professional_notes'))

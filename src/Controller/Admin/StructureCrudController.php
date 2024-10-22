@@ -267,7 +267,7 @@ class StructureCrudController extends AbstractCrudController
                 ->hideOnDetail()
                 ->hideOnIndex()
                 ->setEmptyData('FR'),
-            Field::new('formatted_address', '')
+            Field::new('formatted_address', $this->translator->trans('Address'))
                 ->hideOnForm()
                 ->setFormTypeOptions([
                     'mapped' => false,
@@ -295,8 +295,8 @@ class StructureCrudController extends AbstractCrudController
             FormField::addColumn(6),
             FormField::addFieldset('Général'),
             BooleanField::new('is_receiving_festival_program', $this->translator->trans('is_receiving_festival_program'))
-                ->onlyOnForms(),
-            AssociationField::new('contact_receiving_festival_program')
+                ->hideOnIndex(),
+            AssociationField::new('contact_receiving_festival_program', $this->translator->trans('contact_receiving_festival_program'))
                 ->setFormTypeOptions([
                     'query_builder' => function (ContactRepository $contactRepository) use ($entity) : QueryBuilder {
                         $queryBuilder = $contactRepository->createQueryBuilder('contact')
@@ -315,7 +315,7 @@ class StructureCrudController extends AbstractCrudController
                         return $queryBuilder;
                     },
                 ])
-                ->onlyOnForms(),
+                ->hideOnIndex(),
             AssociationField::new('near_parcs', $this->translator->trans('near_parcs'))
                 ->setTemplatePath('admin/fields/association_field.html.twig')
                 ->renderAsNativeWidget()
