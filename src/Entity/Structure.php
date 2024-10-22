@@ -470,28 +470,12 @@ class Structure
         return $this;
     }
 
-    public function setFestivalOrganizer(bool $is_festival_organizer): static
+    public function isReceivingFestivalProgram(): ?bool
     {
-        $this->is_festival_organizer = $is_festival_organizer;
-
-        return $this;
+        return $this->is_receiving_festival_program;
     }
 
-    public function setCompanyProgrammedInFestival(bool $is_company_programmed_in_festival): static
-    {
-        $this->is_company_programmed_in_festival = $is_company_programmed_in_festival;
-
-        return $this;
-    }
-
-    public function setWorkshopPartner(bool $is_workshop_partner): static
-    {
-        $this->is_workshop_partner = $is_workshop_partner;
-
-        return $this;
-    }
-
-    public function setReceivingFestivalProgram(bool $is_receiving_festival_program): static
+    public function setIsReceivingFestivalProgram(bool $is_receiving_festival_program): static
     {
         $this->is_receiving_festival_program = $is_receiving_festival_program;
 
@@ -610,16 +594,6 @@ class Structure
     public function validate(ExecutionContextInterface $context, $payload)
     {   
         // $this->festival_program->validate($context, $payload);
-    }
-
-    public function getIsReceivingFestivalProgram(): ?bool
-    {
-        return $this->is_receiving_festival_program;
-    }
-
-    public function isReceivingFestivalProgram(): ?bool
-    {
-        return $this->is_receiving_festival_program;
     }
 
     public function getContactReceivingFestivalProgram(): ?Contact

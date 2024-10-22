@@ -144,18 +144,11 @@ class ExcelImportCommand extends Command
                 $value = $columns[$column];
                 $field = $fields[$index];
 
-                if($propertyAccessor->isWritable($structure, $field)) {
-                    $value = match($value) {
-                        'Oui' => true,
-                        'Non' => false,
-                        'x' => null,
-                        default => $value,
-                    };
+                $value = (str_starts_with($field, 'is_')) ? $this->getBooleanValueOfCell($value) : $this->getStringValueOfCell($value);
 
+                if($propertyAccessor->isWritable($structure, $field)) {
                     $value = match($field) {
                         'address_code' => (int) $value,
-                        'is_receiving_festival_program',
-                        'is_workshop_partner' => ($value !== null),
                         default => $value,
                     };
 
@@ -195,6 +188,7 @@ class ExcelImportCommand extends Command
                                 $newParcs[] = $value;
 
                                 $parc = (new Parc())->setName($value);
+                                $this->entityManager->persist($parc);
                                 $structure->addNearParc($parc);
                             }
                         }

@@ -1,3 +1,8 @@
+###> app ###
+/src/Command/ExcelImportCommand.php
+/public/spreadsheets/
+###< app ###
+
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
@@ -23,8 +28,5 @@
 ###< symfony/asset-mapper ###
 
 ###> various .lock ###
-composer.lock
 symfony.lock
 ###< various .lock ###
-
-/public/spreadsheets/
