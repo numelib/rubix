@@ -163,6 +163,22 @@ class EntitySpreadsheetGenerator
                             $cell['value'] = implode(', ', $cell['value']->toArray());
                             if(empty($cell['value'])) $cell['value'] = $cell['default_value'];
                         }
+
+                        if($field === 'is_receiving_festival_program') {
+
+                            if($cell['value'] === true) {
+                                $cell['value'] = str_replace('<br>', ' ', $contact->getFormattedAddress());
+                            } else {
+                                $cell['value'] = str_replace('<br>', ' ', $contact->getStructureSendingFestivalProgram()?->getFormattedAddress(oneline : true)) ?? 'Aucun.e';
+                            }
+
+                            $spreadsheet->getActiveSheet()->setCellValue($cell['position'], $cell['value']);
+                            $spreadsheet->getActiveSheet()->getColumnDimension($cell['column'])->setAutoSize(true);
+
+                            $cell['column']++;
+                            
+                            continue;
+                        }
                         
                         if($field === 'profile_types') {
                             $profileTypes = $contact->getProfileTypes()->toArray();

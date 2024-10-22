@@ -505,7 +505,7 @@ class Structure
     {
         if(!$oneline) {
             $address = $this->getAddressStreet();
-            $address .= $this->getAddressAdition() ? $this->getAddressAdition() : '';
+            $address .= ' | ' . $this->getAddressAdition() ? $this->getAddressAdition() : '';
             $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
             $address .= '<br>' . $this->getAddressCountry();
         } else {

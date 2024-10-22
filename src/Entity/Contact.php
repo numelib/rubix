@@ -414,7 +414,6 @@ class Contact
         $address .= $this->getAddressAdition() ? '<br>' .$this->getAddressAdition() : '';
         $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
         $address .= '<br>' . $this->getAddressCountry();
-        $address .= '<br>' . $this->getPersonnalPhoneNumber();
 
         return $address;
     }
