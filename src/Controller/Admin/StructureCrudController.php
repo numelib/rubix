@@ -161,7 +161,6 @@ class StructureCrudController extends AbstractCrudController
             'structure_type_specializations',
             'festival_informations',
             'is_receiving_festival_program',
-            'contact_receiving_festival_program',
             'is_festival_partner',
             'newsletter_email',
             'newsletter_types',

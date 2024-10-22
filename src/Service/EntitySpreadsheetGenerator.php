@@ -91,15 +91,16 @@ class EntitySpreadsheetGenerator
                 $cell['value'] = $propertyAccessor->getValue($entity, $field);
 
                 // Quick and dirty
-                // if($entity instanceof Structure && $field === 'festival_program__receipt_address') {
-                //     if($entity->getIsReceivingFestivalProgram() && $entity->getContactReceivingFestivalProgram() !== null) {
-                //         $cell['value'] = $entity->getContactReceivingFestivalProgram()->getFormattedAddress();
-                //     }
+                if($entity instanceof Structure && $field === 'is_receiving_festival_program') {
+                    $structure = $entity;
 
-                //     if($entity->getIsReceivingFestivalProgram() && $entity->getContactReceivingFestivalProgram() === null) {
-                //         $cell['value'] = $entity->getContactReceivingFestivalProgram()->getFormattedAddress();
-                //     }
-                // }
+                    if($structure->isReceivingFestivalProgram() === true) {
+                        $cell['value'] = $structure->getContactReceivingFestivalProgram()?->getFormattedAddress() ?? $structure->getFormattedAddress(oneline : true);
+                        $cell['vlaue'] = str_replace('<br>', ' ', $cell['value']);
+                    } else {
+                        $cell['value'] = 'Aucun.e';
+                    }
+                }
 
                 if($cell['value'] instanceof Collection) {
                     $cell['value'] = implode(', ', $cell['value']->toArray());
@@ -113,7 +114,6 @@ class EntitySpreadsheetGenerator
                 }
 
                 $spreadsheet->getActiveSheet()->setCellValue($cell['position'], $cell['value']);
-               
                 $spreadsheet->getActiveSheet()->getColumnDimension($cell['column'])->setAutoSize(true);
                 
                 $cell['column']++;
