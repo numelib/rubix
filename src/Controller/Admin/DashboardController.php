@@ -80,7 +80,7 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('<img src="/assets/img/logo.svg"><span class="d-block mt-3 fw-bold">RUBIX<span>')
+            ->setTitle('<img src="/assets/img/logo.svg"><span class="d-block mt-3 fw-bold">' . strtoupper($_ENV['APP_NAME'] ?? 'CRM') . '<span>')
             ->renderContentMaximized();
     }
 

@@ -4,12 +4,8 @@ namespace App\Service;
 
 use App\Dto\MailjetContactDto;
 use App\Enums\MailjetAction;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\HttpClient\CachingHttpClient;
 use Symfony\Component\HttpClient\CurlHttpClient;
-use Symfony\Component\HttpKernel\HttpCache\Store;
-use Symfony\Contracts\Cache\ItemInterface;
 
 class MailjetAPI
 {
