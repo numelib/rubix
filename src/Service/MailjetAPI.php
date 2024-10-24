@@ -4,6 +4,8 @@ namespace App\Service;
 
 use App\Dto\MailjetContactDto;
 use App\Enums\MailjetAction;
+use App\Enums\NewsletterType as EnumsNewsletterType;
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\CurlHttpClient;
 
@@ -15,14 +17,31 @@ class MailjetAPI
     {
         $this->initClient($params);
     }
+
+    public function areContactListsIdsDefined() : bool
+    {
+        return (!in_array(null, EnumsNewsletterType::contactListIds()));
+    }
+
+    public function areCredentialsDefined() : bool
+    {
+        return (isset($_ENV['MAILJET_KEY'], $_ENV['MAILJET_SECRET']));
+    }
     
     private function initClient(ParameterBagInterface $params) : void
     {
         $this->client = new CurlHttpClient();
     }
 
+    private function refuseMethodCall(string $method) : void
+    {
+        throw new Exception('Cannot use method : ' . $method . ' because API key/secret have not been defined in environement variables. Please add your API credentials in a "MAILJET_KEY" and "MAILJET_SECRET" environement variable');
+    }
+
     public function getContactByEmail(string $email) : ?MailjetContactDto
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $response = $this->client->request(
             'GET',
             'https://api.mailjet.com/v3/REST/contact/' . urlencode($email),
@@ -41,6 +60,8 @@ class MailjetAPI
 
     public function isContactRegistered(string $email) : bool
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $response = $this->client->request(
             'GET',
             'https://api.mailjet.com/v3/REST/contact/' . urlencode($email),
@@ -54,6 +75,8 @@ class MailjetAPI
 
     public function registerContactInList(MailjetContactDto $mailjetContactDto, string $listId) : void
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $response = $this->client->request(
             'POST',
             'https://api.mailjet.com/v3/REST/contactslist/' . $listId . '/managecontact',
@@ -69,6 +92,8 @@ class MailjetAPI
 
     public function removeContactById(int $id) : void
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $response = $this->client->request(
             'DELETE',
             'https://api.mailjet.com/v4/contacts/' . $id,
@@ -80,6 +105,8 @@ class MailjetAPI
 
     public function removeContactByEmail(string $email) : void
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $mailjetContactDto = $this->getContactByEmail($email);
 
         $response = $this->client->request(
@@ -93,6 +120,8 @@ class MailjetAPI
 
     public function getListRecipientsByEmail(string $email) : array
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $response = $this->client->request(
             'GET',
             'https://api.mailjet.com/v3/REST/listrecipient?ContactEmail=' . urlencode($email),
@@ -106,6 +135,8 @@ class MailjetAPI
 
     public function addContactToContactList(MailjetContactDto $mailjetContactDto, int $contactListId) : void
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $response = $this->client->request(
             'POST',
             'https://api.mailjet.com/v3/REST/contactslist/' . $contactListId . '/managecontact',
@@ -121,6 +152,8 @@ class MailjetAPI
 
     public function removeContactToContactList(MailjetContactDto $mailjetContactDto, int $contactListId) : void
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $response = $this->client->request(
             'POST',
             'https://api.mailjet.com/v3/REST/contactslist/' . $contactListId . '/managecontact',
@@ -136,6 +169,8 @@ class MailjetAPI
 
     public function getContactListsByContact(MailjetContactDto $mailjetContactDto) : array
     {
+        if(!$this->areCredentialsDefined()) $this->refuseMethodCall(__METHOD__);
+
         $response = $this->client->request(
             'GET',
             'https://api.mailjet.com/v3/REST/contact/' . $mailjetContactDto->getId() . '/getcontactslists',

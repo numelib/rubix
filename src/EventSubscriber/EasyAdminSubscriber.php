@@ -4,7 +4,6 @@ namespace App\EventSubscriber;
 
 use App\Dto\MailjetContactDto;
 use App\Entity\Contact;
-use App\Entity\ContactDetail;
 use App\Enums\NewsletterType;
 use App\Service\MailjetAPI;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,26 +15,15 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EasyAdminSubscriber implements EventSubscriberInterface
 {
-    public function __construct
-    (
+    public function __construct(
         private readonly MailjetAPI $mailjetAPI,
         private readonly EntityManagerInterface $entityManager,
-    )
-    {
-    }
-
-    public function onBeforeEntityUpdatedEvent(BeforeEntityUpdatedEvent $event): void
-    {
-        $entity = $event->getEntityInstance();
-
-        if(!($entity instanceof ContactDetail)) return;
-        $contact = $entity->getContact();
-        $structure = $entity->getStructure();
-        $contact->setStructure($structure); 
-    }
+    ){}
 
     public function addMailjetContact(AbstractLifecycleEvent $event) : void
     {
+        if(!$this->mailjetAPI->areCredentialsDefined() || !$this->mailjetAPI->areContactListsIdsDefined()) return;
+
         $entity = $event->getEntityInstance();
 
         if(!($entity instanceof Contact)) return;
@@ -66,6 +54,8 @@ class EasyAdminSubscriber implements EventSubscriberInterface
 
     public function updateMailjetContact(AbstractLifecycleEvent $event) : void
     {
+        if(!$this->mailjetAPI->areCredentialsDefined() || !$this->mailjetAPI->areContactListsIdsDefined()) return;
+
         $entity = $event->getEntityInstance();
 
         if(!($entity instanceof Contact)) return;
@@ -106,6 +96,8 @@ class EasyAdminSubscriber implements EventSubscriberInterface
 
     public function deleteMailjetContact(BeforeEntityDeletedEvent $event) : void
     {
+        if(!$this->mailjetAPI->areCredentialsDefined() || !$this->mailjetAPI->areContactListsIdsDefined()) return;
+
         $entity = $event->getEntityInstance();
 
         if(!($entity instanceof Contact)) return;
@@ -128,7 +120,6 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            BeforeEntityUpdatedEvent::class => 'onBeforeEntityUpdatedEvent',
             BeforeEntityPersistedEvent::class => 'addMailjetContact',
             BeforeEntityUpdatedEvent::class => 'updateMailjetContact',
             BeforeEntityDeletedEvent::class => 'deleteMailjetContact',

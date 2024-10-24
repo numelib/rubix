@@ -2,12 +2,8 @@
 
 namespace App\Controller\Admin;
 
-use App\Controller\Admin\Filter\ContactDetailFilter;
 use App\Controller\Admin\Filter\ContactStructureFilter;
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
@@ -17,7 +13,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -26,25 +21,17 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormBuilderInterface;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
-
 use App\Entity\Contact;
 use App\Entity\ContactDetail;
 use App\Entity\Discipline;
-use App\Entity\DisciplineType;
 use App\Entity\Structure;
 use App\Form\Admin\ContactDetailType;
-use App\Form\Admin\ContactNewsletterType;
 use App\Service\EntitySpreadsheetGenerator;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
@@ -55,21 +42,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PropertyAccess\PropertyAccess;
-use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
-use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
-
 use App\Controller\Admin\Filter\HasStructureFilter;
 use App\Controller\Admin\Filter\HasStructureFunctionFilter;
-use App\Entity\FestivalProgram;
-use App\Service\MailjetAPI;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -79,7 +58,6 @@ class ContactCrudController extends AbstractCrudController
         private EntityManagerInterface $entityManager,
         private TranslatorInterface $translator,
         private EntitySpreadsheetGenerator $entitySpreadsheetGenerator,
-        private MailjetAPI $mailjetAPI,
     ) {}
     
     public static function getEntityFqcn(): string
