@@ -82,8 +82,8 @@ class MailjetAPI
             'https://api.mailjet.com/v3/REST/contactslist/' . $listId . '/managecontact',
             [
                 'body' => [
-                    'email' => $mailjetContactDto->getEmail(),
-                    'action' => 'addforce',
+                    'Email' => $mailjetContactDto->getEmail(),
+                    'Action' => 'addforce',
                 ],
                 'auth_basic' => [$_ENV['MAILJET_KEY'], $_ENV['MAILJET_SECRET']]
             ],

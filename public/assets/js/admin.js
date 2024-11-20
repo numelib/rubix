@@ -156,7 +156,7 @@ $(document).ready(function () {
 
         const optgroups = { 'personnal' : 1, 'professional' : 2 };
         const tomselects = [
-            easyAdminPage.tabs['COMMUNICATION']?.blocks['Envoi newsletters']?.element?.querySelector('#Contact_newsletter_email').tomselect
+            document.querySelector('#Contact_newsletter_email').tomselect
         ];
 
         tomselects.forEach((tomselect) => tomselect.addOptionGroup(optgroups.professional, { value: 'professional', label: 'Professionnel' }));

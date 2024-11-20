@@ -11,7 +11,8 @@ class EasyAdminPage
     constructor(element) {
         this.#element = element;
         this.#name = Object.values(EasyAdminPage.#names).filter((name) => ( element.classList.contains('ea-' + name.toLowerCase())))[0];
-        this.#entity = (this.#name !== undefined) ? Array.from(this.#element.classList).filter((cssClass) => cssClass.includes(`ea-${this.#name.toLowerCase()}-`))[0].replace(`ea-${this.#name.toLowerCase()}-`, '') : null;
+        const ENTITY_CSS_CLASSES = (this.#name !== undefined) ? Array.from(this.#element.classList).filter((cssClass) => cssClass.includes(`ea-${this.#name.toLowerCase()}-`)) : null;
+        this.#entity = (ENTITY_CSS_CLASSES !== null && ENTITY_CSS_CLASSES.length > 0) ? ENTITY_CSS_CLASSES[0].replace(`ea-${this.#name.toLowerCase()}-`, '') : null;
     }
 
     static get names() {

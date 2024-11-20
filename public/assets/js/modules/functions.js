@@ -51,6 +51,6 @@ function updateTomselectsOnInputChange(tomselects, input, optgroup = null) {
     });
 
     input.addEventListener('blur', () => {
-        tomselects.forEach((tomselect) => updateOrInsertOption(tomselect, oldValue, input.value, optgroup = null))
+        tomselects.forEach((tomselect) => updateOrInsertOption(tomselect, oldValue, input.value, optgroup))
     })     
 }

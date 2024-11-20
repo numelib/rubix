@@ -300,17 +300,19 @@ class ContactCrudController extends AbstractCrudController
                         if(is_null($contact)) return [];
                     
                         $personnalEmail = $contact->getPersonnalEmail();
-                        $professionalEmails = $contact->getContactDetails()->map(fn(ContactDetail $contactDetail) => $contactDetail->getEmail());
-            
+                        $professionalEmails = $contact->getContactDetails()
+                            ->filter(fn(ContactDetail $contactDetail) => $contactDetail->getEmail() !== null && !empty($contactDetail->getEmail()))
+                            ->map(fn(ContactDetail $contactDetail) => $contactDetail->getEmail());
+                
                         $choices = [];
-                        if($personnalEmail) $choices['Personnel'][] = $personnalEmail;
-                        if($professionalEmails) {
-                            foreach($professionalEmails as $index => $professionalEmail)
+                        if($personnalEmail) $choices['Personnel'][$personnalEmail] = $personnalEmail;
+                        if(!empty($professionalEmails->toArray())) {
+                            foreach($professionalEmails as $professionalEmail)
                             {
-                                $choices['Professionnel'][] = $professionalEmail;
+                                $choices['Professionnel'][$professionalEmail] = $professionalEmail;
                             }
                         }
-    
+
                         return $choices;
                     }
 
