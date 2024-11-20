@@ -24,13 +24,15 @@ use App\Entity\Structure;
 use App\Entity\StructureNewsletter;
 use App\Entity\ProfileType;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DashboardController extends AbstractDashboardController
 {
-
-    public function __construct(private EasyAdminDashboard $easyAdminDashboard, private AdminUrlGenerator $adminUrlGenerator)
-    {
-    }
+    public function __construct(
+        private readonly EasyAdminDashboard $easyAdminDashboard,
+        private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly TranslatorInterface $translator
+    ){}
 
     public function index(): Response
     {
@@ -52,11 +54,12 @@ class DashboardController extends AbstractDashboardController
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('@EasyAdmin/page/login.html.twig', [
+        return $this->render('security/login.html.twig', [
             // parameters usually defined in Symfony login forms
             'error' => $error,
             'last_username' => $lastUsername,
-            'page_title' => '193 Soleil',
+            'form_title' => (isset($_ENV['APP_NAME'], $_ENV['BUSINESS_NAME'])) ? $this->translator->trans('Base de données ' . $_ENV['APP_NAME'] . ' <br>' . $_ENV['BUSINESS_NAME']) : $this->translator->trans('Application'),
+            'page_title' => $_ENV['APP_NAME'] ?? null,
             'csrf_token_intention' => 'authenticate',
             'target_path' => $this->generateUrl('admin'),
             'username_label' => 'Nom d\'utilisateur',
