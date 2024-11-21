@@ -45,8 +45,6 @@ class ContactStructureFilter implements FilterInterface
             $alias = self::extractAliasFromPropertyName($property);
             $andWhere = 'structure.' . $alias . ' = :value';
 
-            $queryBuilder->leftJoin('entity.contact_details', 'contact_details');
-            $queryBuilder->leftJoin('contact_details.structure', 'structure');
             $queryBuilder->andWhere($andWhere);
             $queryBuilder->setParameter('value', $filterDataDto->getValue());
             ;

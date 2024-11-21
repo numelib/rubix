@@ -77,8 +77,8 @@ class StructureCrudController extends AbstractCrudController
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
         $queryBuilder
-            ->leftJoin('entity.contact_receiving_festival_program', 'contact')
-            ->addSelect('contact')
+            ->leftJoin('entity.contact_receiving_festival_program', 'contact_receiving_festival_program')
+            ->addSelect('contact_receiving_festival_program')
         ;
         
         return $queryBuilder;
