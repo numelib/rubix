@@ -174,24 +174,11 @@ $(document).ready(function () {
         TOMSELECT.addOptionGroup(OPTGROUPS.professional, { value: 'Professionnel', label: 'Professionnel' });
         TOMSELECT.addOptionGroup(OPTGROUPS.personnal, { value: 'Personnel', label: 'Personnel' });
 
-        if(CONTACT_NEWSLETTER_SELECT_WRAPPER.querySelector('.invalid-feedback') === null) {
-            const WARNING_PARAGRAPH = document.createElement('p');
-            WARNING_PARAGRAPH.classList.add('invalid-feedback');
-            CONTACT_NEWSLETTER_SELECT_WRAPPER.appendChild(WARNING_PARAGRAPH);
-        }
-
-        const WARNING_PARAGRAPH = CONTACT_NEWSLETTER_SELECT_WRAPPER.querySelector('.invalid-feedback');
-
         // INIT NEWSLETTER EMAILS
 
         OPTIONS[PERSONNAL_EMAIL] = generateTomselectOption(PERSONNAL_EMAIL, PERSONNAL_EMAIL, OPTGROUPS.personnal);
 
         Array.from(PROFESSIONAL_EMAIL_INPUTS).forEach((input) => {
-            if(OPTIONS[input.value] !== undefined) {
-                WARNING_PARAGRAPH.classList.add('d-block');
-                WARNING_PARAGRAPH.textContent = `L\'email ${input.value} a été référencé au minimum deux fois dans des champs différents !`;
-            }
-
             OPTIONS[input.value] = generateTomselectOption(input.value, input.value, OPTGROUPS.professional);
         })
 
