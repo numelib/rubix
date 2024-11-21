@@ -1,5 +1,5 @@
 import { EasyAdminPage } from "./modules/classes/EasyAdminPage.js";
-import { updateTomselectsOnInputChange, initContactDetailsObserver } from "./modules/functions.js";
+import { updateTomselectsOnInputChange, initContactDetailsObserver, generateTomselectOption, updateOrInsertOption } from "./modules/functions.js";
 
 $(document).ready(function () {
    /** Contact Profile Type **/
@@ -149,47 +149,93 @@ $(document).ready(function () {
 
         // MODIFICATION DES <select> DES COORDONNEES EN TOMSELECT
 
-        const structureSelects = easyAdminPage.tabs['PROFESSIONNEL'].blocks['Coordonnées'].element.querySelectorAll('[id^="Contact_contact_details_"][id$="_structure"]');
-        structureSelects.forEach((select) =>  new TomSelect(select, {maxOptions : null}));
-        
-        // MODIFICATION DYNAMIQUE EMAILS
+        const STRUCTURE_SELECTS = easyAdminPage.tabs['PROFESSIONNEL'].blocks['Coordonnées'].element.querySelectorAll('[id^="Contact_contact_details_"][id$="_structure"]');
+        STRUCTURE_SELECTS.forEach((select) =>  new TomSelect(select, {maxOptions : null}));
 
-        const optgroups = { 'personnal' : 1, 'professional' : 2 };
-        const tomselects = [
-            document.querySelector('#Contact_newsletter_email').tomselect
-        ];
+        // SETUP
 
-        tomselects.forEach((tomselect) => tomselect.addOptionGroup(optgroups.professional, { value: 'professional', label: 'Professionnel' }));
-        tomselects.forEach((tomselect) => tomselect.addOptionGroup(optgroups.personnal, { value: 'personnal', label: 'Personnel' }));
+        const OPTIONS = {};
+        const OPTGROUPS = { 'personnal' : 1, 'professional' : 2 };
+        const PROFESSIONAL_TAB = easyAdminPage.tabs['PROFESSIONNEL'];
 
-        // 1 - GESTON AJOUT/SUPPRESSION/MODIFICATION EMAILS PROFESSIONNELS
+        const PERSONNAL_EMAIL_INPUT = document.querySelector('#Contact_personnal_email');
+        const PERSONNAL_EMAIL = PERSONNAL_EMAIL_INPUT.value;
 
-        const professionalTab = easyAdminPage.tabs['PROFESSIONNEL'];
+        const PROFESSIONAL_EMAIL_INPUTS = PROFESSIONAL_TAB.blocks['Coordonnées'].inputs.filter((input) => /Contact_contact_details_[0-9]+_email/.test(input.id));
 
-        const proEmailInputs = professionalTab.blocks['Coordonnées'].inputs.filter((input) => /Contact_contact_details_[0-9]+_email/.test(input.id));
-        proEmailInputs.forEach((proEmailInput) => {
-            updateTomselectsOnInputChange(tomselects, proEmailInput, optgroups.professional);
+        const CONTACT_NEWSLETTER_SELECT = document.querySelector('#Contact_newsletter_email');
+        const CONTACT_NEWSLETTER_SELECT_WRAPPER = CONTACT_NEWSLETTER_SELECT.parentElement;
+        const DATABASE_VALUE = CONTACT_NEWSLETTER_SELECT.value;
+        const TOMSELECT = CONTACT_NEWSLETTER_SELECT.tomselect;
+
+        TOMSELECT.clear();
+        TOMSELECT.clearOptions();
+        TOMSELECT.refreshOptions();
+        TOMSELECT.addOptionGroup(OPTGROUPS.professional, { value: 'Professionnel', label: 'Professionnel' });
+        TOMSELECT.addOptionGroup(OPTGROUPS.personnal, { value: 'Personnel', label: 'Personnel' });
+
+        if(CONTACT_NEWSLETTER_SELECT_WRAPPER.querySelector('.invalid-feedback') === null) {
+            const WARNING_PARAGRAPH = document.createElement('p');
+            WARNING_PARAGRAPH.classList.add('invalid-feedback');
+            CONTACT_NEWSLETTER_SELECT_WRAPPER.appendChild(WARNING_PARAGRAPH);
+        }
+
+        const WARNING_PARAGRAPH = CONTACT_NEWSLETTER_SELECT_WRAPPER.querySelector('.invalid-feedback');
+
+        // INIT NEWSLETTER EMAILS
+
+        OPTIONS[PERSONNAL_EMAIL] = generateTomselectOption(PERSONNAL_EMAIL, PERSONNAL_EMAIL, OPTGROUPS.personnal);
+
+        Array.from(PROFESSIONAL_EMAIL_INPUTS).forEach((input) => {
+            if(OPTIONS[input.value] !== undefined) {
+                WARNING_PARAGRAPH.classList.add('d-block');
+                WARNING_PARAGRAPH.textContent = `L\'email ${input.value} a été référencé au minimum deux fois dans des champs différents !`;
+            }
+
+            OPTIONS[input.value] = generateTomselectOption(input.value, input.value, OPTGROUPS.professional);
         })
 
-        initContactDetailsObserver(professionalTab);
+        Object.values(OPTIONS).forEach((option) => {
+            TOMSELECT.addOption(option);
 
-        professionalTab.element.addEventListener('contactDetailAdded', (ev) => {
+            if(option.value === DATABASE_VALUE) {
+                TOMSELECT.setValue(option.value);
+            }
+        })
+
+        TOMSELECT.addOptions(Object.values(OPTIONS));
+
+        // UPDATE PERSONNAL EMAIL
+       
+        let oldValue = PERSONNAL_EMAIL;
+        PERSONNAL_EMAIL_INPUT.addEventListener('focus', function() {
+            oldValue = this.value;
+        });
+
+        PERSONNAL_EMAIL_INPUT.addEventListener('blur', function() {
+            updateOrInsertOption(TOMSELECT, oldValue, this.value, OPTGROUPS.personnal);
+        });
+
+        // UPDATE PROFESSIONAL EMAILS
+
+        PROFESSIONAL_EMAIL_INPUTS.forEach((input) => {
+            updateTomselectsOnInputChange([TOMSELECT], input, OPTGROUPS.professional);
+        })
+
+        initContactDetailsObserver(PROFESSIONAL_TAB);
+
+        PROFESSIONAL_TAB.element.addEventListener('contactDetailAdded', (ev) => {
             const addedEmailInput = ev.detail.addedElement.querySelector('[id^="Contact_contact_details_"][id$="_email"]');
-            updateTomselectsOnInputChange(tomselects, addedEmailInput, optgroups.professional);
+            updateTomselectsOnInputChange([TOMSELECT], addedEmailInput, OPTGROUPS.professional);
 
             const structureSelect = ev.detail.addedElement.querySelector('[id^="Contact_contact_details_"][id$="_structure"]')
             new TomSelect(structureSelect);
         });
 
-        professionalTab.element.addEventListener('contactDetailRemoved', (ev) => {
+        PROFESSIONAL_TAB.element.addEventListener('contactDetailRemoved', (ev) => {
             const removedEmailInput = ev.detail.removedElement.querySelector('[id^="Contact_contact_details_"][id$="_email"]');
-            tomselects.forEach((tomselect) => tomselect.removeOption(removedEmailInput.value));
+            TOMSELECT.removeOption(removedEmailInput.value);
         });
-
-        // 2 - GESTION MODIFICATION EMAIL PERSONNEL
-
-        const persoEmailInput = document.querySelector('#Contact_personnal_email');
-        updateTomselectsOnInputChange(tomselects, persoEmailInput, optgroups.personnal);
     }
 
     if(easyAdminPage.entity === 'Structure' && formPages.includes(easyAdminPage.name)) {
@@ -199,7 +245,5 @@ $(document).ready(function () {
         inputs.forEach((input) => {
             updateTomselectsOnInputChange([output.tomselect], input);
         })
-
-
     }
 });

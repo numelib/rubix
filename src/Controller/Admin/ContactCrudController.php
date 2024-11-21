@@ -293,34 +293,37 @@ class ContactCrudController extends AbstractCrudController
 
             FormField::addColumn(6),
             FormField::addFieldset('Envoi newsletters'),
-            ChoiceField::new('newsletter_email', $this->translator->trans('newsletter_email'))
-                ->setChoices(
-                    function (?Contact $contact) 
-                    {
-                        if(is_null($contact)) return [];
+            // ChoiceField::new('newsletter_email', $this->translator->trans('newsletter_email'))
+            //     ->setChoices(
+            //         function (?Contact $contact) 
+            //         {
+            //             if(is_null($contact)) return [];
                     
-                        $personnalEmail = $contact->getPersonnalEmail();
-                        $professionalEmails = $contact->getContactDetails()
-                            ->filter(fn(ContactDetail $contactDetail) => $contactDetail->getEmail() !== null && !empty($contactDetail->getEmail()))
-                            ->map(fn(ContactDetail $contactDetail) => $contactDetail->getEmail());
+            //             $personnalEmail = $contact->getPersonnalEmail();
+            //             $professionalEmails = $contact->getContactDetails()
+            //                 ->filter(fn(ContactDetail $contactDetail) => $contactDetail->getEmail() !== null && !empty($contactDetail->getEmail()))
+            //                 ->map(fn(ContactDetail $contactDetail) => $contactDetail->getEmail());
                 
-                        $choices = [];
-                        if($personnalEmail) $choices['Personnel'][$personnalEmail] = $personnalEmail;
-                        if(!empty($professionalEmails->toArray())) {
-                            foreach($professionalEmails as $professionalEmail)
-                            {
-                                $choices['Professionnel'][$professionalEmail] = $professionalEmail;
-                            }
-                        }
+            //             $choices = [];
+            //             if($personnalEmail) $choices['Personnel'][$personnalEmail] = $personnalEmail;
+            //             if(!empty($professionalEmails->toArray())) {
+            //                 foreach($professionalEmails as $professionalEmail)
+            //                 {
+            //                     $choices['Professionnel'][$professionalEmail] = $professionalEmail;
+            //                 }
+            //             }
 
-                        return $choices;
-                    }
+            //             return $choices;
+            //         }
 
-                )
-                ->setFormTypeOptions([
-                    'choice_label' => fn($newsletterEmail, $key) => $newsletterEmail,
-                ])
-                ->formatValue(fn($value, Contact $contact) => $value)
+            //     )
+            //     ->setFormTypeOptions([
+            //         'choice_label' => fn($newsletterEmail, $key) => $newsletterEmail,
+            //     ])
+            //     ->formatValue(fn($value, Contact $contact) => $value)
+            //     ->hideOnIndex(),
+            ChoiceField::new('newsletter_email', $this->translator->trans('newsletter_email'))
+                ->setChoices(fn(?Contact $contact) => ($contact?->getNewsletterEmail() !== null) ? [$contact?->getNewsletterEmail() => $contact?->getNewsletterEmail()] : [])
                 ->hideOnIndex(),
             AssociationField::new('newsletter_types', $this->translator->trans('newsletter_types'))
                 ->renderAsNativeWidget()

@@ -17,14 +17,14 @@ class EasyAdminBlock
     }
 
     get inputs() {
-        return Array.from(this.#element.querySelectorAll('input')).filter((input) => input.checkVisibility());
+        return Array.from(this.#element.querySelectorAll('.form-widget input'));
     }
 
     get selects() {
-       return Array.from(this.#element.querySelectorAll('select')).filter((select) => select.checkVisibility());
+       return Array.from(this.#element.querySelectorAll('.form-widget select'));
     }
 
     get textareas() {
-       return Array.from(this.#element.querySelectorAll('textarea')).filter((textarea) => textarea.checkVisibility());
+       return Array.from(this.#element.querySelectorAll('.form-widget textarea'));
     }
 }

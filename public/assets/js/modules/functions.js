@@ -1,4 +1,4 @@
-export { initContactDetailsObserver, updateTomselectsOnInputChange };
+export { initContactDetailsObserver, updateTomselectsOnInputChange, generateTomselectOption, updateOrInsertOption };
 
 function isFieldCollection(node) {
     return node instanceof HTMLElement && node.classList.contains('field-collection-item');
@@ -53,4 +53,10 @@ function updateTomselectsOnInputChange(tomselects, input, optgroup = null) {
     input.addEventListener('blur', () => {
         tomselects.forEach((tomselect) => updateOrInsertOption(tomselect, oldValue, input.value, optgroup))
     })     
+}
+
+function generateTomselectOption(value, text, optgroup = null) {
+    const OPTION = { value : value, text : text };
+    if(optgroup !== null) OPTION.optgroup = optgroup;
+    return OPTION;
 }
