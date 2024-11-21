@@ -26,7 +26,12 @@
                         <div>Structure</div>
                     </div>
                     <div class="field-value">
-                        <span>{{ contactDetail.structure }}</span>
+                        {% set url = ea_url()
+                            .setController('App\\Controller\\Admin\\StructureCrudController')
+                            .setEntityId(contactDetail.structure.id)
+                            .setAction('detail')
+                        %}
+                        <span><a href="{{ url }}">{{ contactDetail.structure }}</a></span>
                     </div>
                 </div>
             </div>

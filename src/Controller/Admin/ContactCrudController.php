@@ -58,6 +58,7 @@ class ContactCrudController extends AbstractCrudController
         private EntityManagerInterface $entityManager,
         private TranslatorInterface $translator,
         private EntitySpreadsheetGenerator $entitySpreadsheetGenerator,
+        private readonly AdminUrlGenerator $adminUrlGenerator,
     ) {}
     
     public static function getEntityFqcn(): string
@@ -162,7 +163,8 @@ class ContactCrudController extends AbstractCrudController
             ->renderContentMaximized()
             ->setFormThemes(['admin/form/contact_profile_type.html.twig', '@EasyAdmin/crud/form_theme.html.twig'])
             ->setPaginatorPageSize(20)
-            ->setPaginatorRangeSize(4);
+            ->setPaginatorRangeSize(4)
+            ->setDefaultSort(['lastname' => 'ASC']);
 
         return $crud;
     }
@@ -247,7 +249,17 @@ class ContactCrudController extends AbstractCrudController
                 ->formatValue(fn(ArrayCollection $structuresFunctions) => implode(', ', $structuresFunctions->toArray()))
                 ->onlyOnIndex(),
             Field::new('structures', $this->translator->trans('structures'))
-                ->formatValue(fn(ArrayCollection $structures) => implode(', ', $structures->toArray()))
+                ->formatValue(function(ArrayCollection $structures)  {
+                    $anchor = '<a href="">';
+                    $structures = array_map(function(Structure $structure) {
+                        $url = $this->adminUrlGenerator
+                            ->setController(StructureCrudController::class)
+                            ->setEntityId($structure->getId())
+                            ->setAction(Action::DETAIL);
+                        return '<a href="' . $url . '">' . $structure . '</a>';
+                    }, $structures->toArray());
+                    return implode(', ', $structures);
+                })
                 ->onlyOnIndex(),
             FormField::addTab('PERSONNEL'),
             FormField::addColumn(6),
