@@ -85,12 +85,13 @@ class ContactCrudController extends AbstractCrudController
         $createAndInspectActionName = 'createAndInspect';
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_NEW, Action::new($createAndInspectActionName, $this->translator->trans('Create and inspect'))
+            ->add(Crud::PAGE_NEW, Action::new($createAndInspectActionName)
                 ->setCssClass('action-'.Action::SAVE_AND_RETURN)
                 ->addCssClass('btn btn-primary action-save')
                 ->displayAsButton()
                 ->setHtmlAttributes(['type' => 'submit', 'name' => 'ea[newForm][btn]', 'value' => $createAndInspectActionName])
                 ->linkToCrudAction(Action::NEW)
+                ->setLabel($this->translator->trans('Create and inspect'))
             )
             ->addBatchAction(Action::new('xlsExport', 'Export XLS')
                 ->linkToCrudAction('exportAsXls')
@@ -100,7 +101,9 @@ class ContactCrudController extends AbstractCrudController
                 ->linkToCrudAction('exportAsPdf')
                 ->addCssClass('btn btn-primary')
                 ->setIcon('fa-solid fa-file-pdf'))
-            ->reorder(Crud::PAGE_NEW, [Action::INDEX, Action::SAVE_AND_CONTINUE, Action::SAVE_AND_ADD_ANOTHER, $createAndInspectActionName, Action::SAVE_AND_CONTINUE])
+            ->remove(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER)
+            ->remove(Crud::PAGE_NEW, Action::SAVE_AND_CONTINUE)
+            ->reorder(Crud::PAGE_NEW, [Action::INDEX, $createAndInspectActionName])
             ->update(Crud::PAGE_INDEX, Action::NEW, fn(Action $action) => $action->setLabel('Créer un Contact'))
         ;
     }
