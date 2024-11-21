@@ -151,6 +151,9 @@ $(document).ready(function () {
 
         const STRUCTURE_SELECTS = easyAdminPage.tabs['PROFESSIONNEL'].blocks['Coordonnées'].element.querySelectorAll('[id^="Contact_contact_details_"][id$="_structure"]');
         STRUCTURE_SELECTS.forEach((select) =>  new TomSelect(select, {maxOptions : null}));
+        STRUCTURE_SELECTS.forEach((select) => {
+            select?.parentElement?.querySelector('div.form-select')?.classList.add('text-wrap');
+        })
 
         // SETUP
 
@@ -217,6 +220,7 @@ $(document).ready(function () {
 
             const structureSelect = ev.detail.addedElement.querySelector('[id^="Contact_contact_details_"][id$="_structure"]')
             new TomSelect(structureSelect);
+            structureSelect?.parentElement?.querySelector('div.form-select')?.classList.add('text-wrap');
         });
 
         PROFESSIONAL_TAB.element.addEventListener('contactDetailRemoved', (ev) => {
