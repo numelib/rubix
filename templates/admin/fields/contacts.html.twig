@@ -1,28 +1,30 @@
 {% set contacts = field.value %}
 
-{% if contacts|length == 0 %}
-    <span>Aucun(e)</span>
-{% else %}
-    <ul class="list-unstyled ps-3">
+<table class="table">
+    <thead>
+        <tr>
+            <th>Civilité</th>
+            <th>Prénom</th>
+            <th>Nom</th>
+            <th>Fonctions</th>
+            <th>Autres structures</th>
+        </tr>
+    </thead>
+    <tbody>
         {% for contact in contacts %}
             {% set otherStructures = contact.structures|filter(structure => structure.id != entity.instance.id) %}
-            <li>
-                {% set url = ea_url()
-                    .setAction('detail')
-                    .setEntityId(contact.id)
-                    .setController('App\\Controller\\Admin\\ContactCrudController')
-                %}
-                <a class="fw-bold text-decoration-underline" href="{{ url }}" target="_blank">
-                    Contact #{{ loop.index }}
-                </a>
-                <div class="ps-4">
-                    <p>Civilité : {{ contact.civility }}</p>
-                    <p>Prénom : {{ contact.firstname }}</p>
-                    <p>Nom : {{ contact.lastname }}</p>
-                    <p>Fonctions : {{ contact.structuresFunctions|join(', ') }}</p>
-                    <p>Autres structures : {{ otherStructures|join(', ') }}</p>
-                </div>
-            </li>
+            {% set url = ea_url()
+                .setAction('detail')
+                .setEntityId(contact.id)
+                .setController('App\\Controller\\Admin\\ContactCrudController')
+            %}
+            <tr>
+                <td>{{ contact.civility }}</td>
+                <td><a href="{{ url }}" target="_blank">{{ contact.firstname }}</a></td>
+                <td><a href="{{ url }}" target="_blank">{{ contact.lastname }}</a></td>
+                <td>{{ contact.structuresFunctions|join(', ') }}</td>
+                <td>{{ otherStructures|join(', ') }}</td>
+            </tr>
         {% endfor %}
-    </ul>
-{% endif %}
+    </tbody>
+</table>

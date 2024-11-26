@@ -272,7 +272,7 @@ class StructureCrudController extends AbstractCrudController
                     'block_name' => 'contacts_list',
                     'mapped' => false,
                 ]),
-            Field::new('contacts', $this->translator->trans('contacts'))
+            Field::new('contacts', false)
                 ->setTemplatePath('admin/fields/contacts.html.twig')
                 ->onlyOnDetail(),
 
