@@ -43,9 +43,11 @@ class ContactDetailType extends AbstractType
                         ->leftJoin('structure.contact_receiving_festival_program', 'contact_receiving_festival_program')
                         ->orderBy('structure.name', 'ASC');
                 },
+                'choice_label' => fn(Structure $structure) => ($structure->getAddressCity() !== null && !empty($structure->getAddressCity())) ? $structure . ' - ' . $structure->getAddressCity() : $structure,
+                'required' => false,
                 'attr' => ['required' => false],
                 'placeholder' => 'Aucun(e)'
-                ])                
+            ])                
             ->add('contactDetailPhoneNumbers', CollectionType::class, [
                 'attr' => ['required' => false],
                 'label' => $this->translator->trans('contactDetailPhoneNumbers'),
