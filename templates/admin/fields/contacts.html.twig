@@ -7,7 +7,14 @@
         {% for contact in contacts %}
             {% set otherStructures = contact.structures|filter(structure => structure.id != entity.instance.id) %}
             <li>
-                <p class="fw-bold">Contact #{{ loop.index }}</p>
+                {% set url = ea_url()
+                    .setAction('detail')
+                    .setEntityId(contact.id)
+                    .setController('App\\Controller\\Admin\\ContactCrudController')
+                %}
+                <a class="fw-bold text-decoration-underline" href="{{ url }}" target="_blank">
+                    Contact #{{ loop.index }}
+                </a>
                 <div class="ps-4">
                     <p>Civilité : {{ contact.civility }}</p>
                     <p>Prénom : {{ contact.firstname }}</p>
