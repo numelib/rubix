@@ -164,6 +164,10 @@ class EntitySpreadsheetGenerator
                             if(empty($cell['value'])) $cell['value'] = $cell['default_value'];
                         }
 
+                        if($field === 'civility') {
+                            $cell['value'] = $this->translator->trans($cell['value']);
+                        }
+
                         if($field === 'is_receiving_festival_program') {
 
                             if($cell['value'] === true) {

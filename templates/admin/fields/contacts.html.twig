@@ -19,7 +19,7 @@
                 .setController('App\\Controller\\Admin\\ContactCrudController')
             %}
             <tr>
-                <td>{{ contact.civility }}</td>
+                <td>{{ contact.civility|trans }}</td>
                 <td><a href="{{ url }}" target="_blank">{{ contact.firstname }}</a></td>
                 <td><a href="{{ url }}" target="_blank">{{ contact.lastname }}</a></td>
                 <td>{{ contact.structuresFunctions|join(', ') }}</td>
