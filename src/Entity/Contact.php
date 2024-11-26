@@ -5,9 +5,8 @@ namespace App\Entity;
 use App\Repository\ContactRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Translation\Util\ArrayConverter;
+use Symfony\Component\Intl\Countries;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
@@ -413,7 +412,7 @@ class Contact
         $address = $this->getAddressStreet();
         $address .= $this->getAddressAdition() ? '<br>' .$this->getAddressAdition() : '';
         $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
-        $address .= '<br>' . $this->getAddressCountry();
+        $address .= '<br>' . Countries::getName($this->getAddressCountry());
 
         return $address;
     }
