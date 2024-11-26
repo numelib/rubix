@@ -508,14 +508,14 @@ class Structure
             $address = $this->getAddressStreet();
             $address .= ' | ' . $this->getAddressAdition() ? $this->getAddressAdition() : '';
             $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
-            $address .= '<br>' . Countries::getName($this->getAddressCountry());
+            $address .= ($this->getAddressCountry() !== null) ? '<br>' . Countries::getName($this->getAddressCountry()) : '';
         } else {
             $address = $this->getAddressStreet();
             $address .= $this->getAddressAdition() ? ' - ' . $this->getAddressAdition() : '';
             $address .= ' - ';
             $address .= $this->getAddressCode().' '.$this->getAddressCity();
             $address .= ' ';
-            $address .= Countries::getName($this->getAddressCountry());
+            $address .= ($this->getAddressCountry() !== null) ? Countries::getName($this->getAddressCountry()) : '';
         }
        
 

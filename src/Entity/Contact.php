@@ -412,7 +412,7 @@ class Contact
         $address = $this->getAddressStreet();
         $address .= $this->getAddressAdition() ? '<br>' .$this->getAddressAdition() : '';
         $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
-        $address .= '<br>' . Countries::getName($this->getAddressCountry());
+        $address .= ($this->getAddressCountry() !== null) ? '<br>' . Countries::getName($this->getAddressCountry()) : '';
 
         return $address;
     }
