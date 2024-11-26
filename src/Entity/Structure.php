@@ -506,18 +506,21 @@ class Structure
     {
         if(!$oneline) {
             $address = $this->getAddressStreet();
-            $address .= ' | ' . $this->getAddressAdition() ? $this->getAddressAdition() : '';
             $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
-            $address .= ($this->getAddressCountry() !== null) ? '<br>' . Countries::getName($this->getAddressCountry()) : '';
+
+            if($this->getAddressCountry() !== null) {
+                $address .= (Countries::exists($this->getAddressCountry())) ? '<br>' . Countries::getName($this->getAddressCountry()) : $this->getAddressCountry();
+            }
         } else {
             $address = $this->getAddressStreet();
-            $address .= $this->getAddressAdition() ? ' - ' . $this->getAddressAdition() : '';
             $address .= ' - ';
             $address .= $this->getAddressCode().' '.$this->getAddressCity();
             $address .= ' ';
-            $address .= ($this->getAddressCountry() !== null) ? Countries::getName($this->getAddressCountry()) : '';
+
+            if($this->getAddressCountry() !== null) {
+                $address .= (Countries::exists($this->getAddressCountry())) ? Countries::getName($this->getAddressCountry()) : $this->getAddressCountry();
+            }
         }
-       
 
         return $address;
     }

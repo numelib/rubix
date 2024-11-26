@@ -410,9 +410,11 @@ class Contact
     public function getFormattedAddress(): string
     {
         $address = $this->getAddressStreet();
-        $address .= $this->getAddressAdition() ? '<br>' .$this->getAddressAdition() : '';
         $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
-        $address .= ($this->getAddressCountry() !== null) ? '<br>' . Countries::getName($this->getAddressCountry()) : '';
+
+        if($this->getAddressCountry() !== null) {
+            $address .= (Countries::exists($this->getAddressCountry())) ? '<br>' . Countries::getName($this->getAddressCountry()) : $this->getAddressCountry();
+        }
 
         return $address;
     }
