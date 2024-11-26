@@ -4,7 +4,8 @@ namespace App\Form\Admin;
 
 use App\Entity\ContactDetailPhoneNumber;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -21,8 +22,13 @@ class ContactDetailPhoneNumberType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('phone_number', TextType::class, ['label' => $this->translator->trans('phone_number')])
-            ->add('code', TextType::class, ['label' => $this->translator->trans('code')])
+            ->add('phone_number', TelType::class, ['label' => $this->translator->trans('phone_number')])
+            ->add('code', NumberType::class, [
+                'html5' => true,
+                'required' => false,
+                'empty_data' => 33,
+                'label' => $this->translator->trans('code')
+            ])
         ;
     }
 

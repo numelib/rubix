@@ -20,7 +20,7 @@ class ContactDetailPhoneNumber
     private ?string $phone_number = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $code = null;
+    private ?int $code = 33;
 
     public function __toString()
     {
@@ -56,14 +56,14 @@ class ContactDetailPhoneNumber
         return $this;
     }
 
-    public function getCode(): ?int
+    public function getCode(): int
     {
-        return $this->code;
+        return $this->code ?? 33;
     }
 
     public function setCode(?int $code): static
     {
-        $this->code = $code;
+        $this->code = $code ?? 33;
 
         return $this;
     }

@@ -49,11 +49,12 @@ class ContactDetailType extends AbstractType
                 'placeholder' => 'Aucun(e)'
             ])                
             ->add('contactDetailPhoneNumbers', CollectionType::class, [
-                'attr' => ['required' => false],
-                'label' => $this->translator->trans('contactDetailPhoneNumbers'),
                 'entry_type' => ContactDetailPhoneNumberType::class,
                 'entry_options' => ['label' => false],
                 'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false,
+                'label' => $this->translator->trans('contactDetailPhoneNumbers'),
             ])
         ;
     }

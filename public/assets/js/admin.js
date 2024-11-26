@@ -216,9 +216,11 @@ $(document).ready(function () {
 
         PROFESSIONAL_TAB.element.addEventListener('contactDetailAdded', (ev) => {
             const addedEmailInput = ev.detail.addedElement.querySelector('[id^="Contact_contact_details_"][id$="_email"]');
+            if(addedEmailInput === null) return;
             updateTomselectsOnInputChange([TOMSELECT], addedEmailInput, OPTGROUPS.professional);
 
-            const structureSelect = ev.detail.addedElement.querySelector('[id^="Contact_contact_details_"][id$="_structure"]')
+            const structureSelect = ev.detail.addedElement.querySelector('[id^="Contact_contact_details_"][id$="_structure"]');
+            if(structureSelect === null) return;
             new TomSelect(structureSelect);
             structureSelect?.parentElement?.querySelector('div.form-select')?.classList.add('text-wrap');
         });
