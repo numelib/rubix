@@ -62,12 +62,12 @@ updated_at :  Modifié le
 newsletter_email : Email pour envoi newsletter
 structure_address_code : 'Code postal de la/des Structure(s) associée(s)'
 structure_address_city : 'Ville de la/des Structure(s) associée(s)'
-structure_is_festival_partner: 'Structure(s) associée(s) partenaire du festival'
-structure_is_company_programmed_in_festival: 'Structure(s) associée(s) programmée au festival'
-structure_is_workshop_partner: 'Structure(s) associée(s) partenaire ateliers'
-contact_is_festival_participant: 'Contact(s) associé(s) étant bénévole au festival'
-contact_is_board_of_directors_member: 'Contact(s) associé(s) étant membre du conseil d''administration'
-contact_is_organization_participant: 'Contact(s) associé(s) étant adhérent.e'
+structure_is_festival_partner: 'Structure(s) associée(s) partenaire(s) du festival'
+structure_is_company_programmed_in_festival: 'Structure(s) associée(s) programmée(s) au festival'
+structure_is_workshop_partner: 'Structure(s) associée(s) partenaire(s) ateliers'
+contact_is_festival_participant: 'Contact(s) associé(s) étant bénévole(s) au festival'
+contact_is_board_of_directors_member: 'Contact(s) associé(s) étant membre(s) du conseil d''administration'
+contact_is_organization_participant: 'Contact(s) associé(s) étant adhérent.e(s)'
 email_type: Email d'envoi du programme
 festival_program_is_sent: Envoi programme du festival
 contact_receiving_festival_program: Contact recevant le programme du festival
