@@ -60,8 +60,8 @@ Updated_at : Modifié le
 Created_at : Créé le
 updated_at :  Modifié le
 newsletter_email : Email pour envoi newsletter
-structure_address_code : 'Code postal de la/des Structure(s) associée(s)'
-structure_address_city : 'Ville de la/des Structure(s) associée(s)'
+structure_address_code : 'Code postal de la/des structure(s) associée(s)'
+structure_address_city : 'Ville de la/des structure(s) associée(s)'
 structure_is_festival_partner: 'Structure(s) associée(s) partenaire(s) du festival'
 structure_is_company_programmed_in_festival: 'Structure(s) associée(s) programmée(s) au festival'
 structure_is_workshop_partner: 'Structure(s) associée(s) partenaire(s) ateliers'
