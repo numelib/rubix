@@ -14,9 +14,11 @@
         {% for contact in contacts %}
             {% set otherStructures = contact.structures|filter(structure => structure.id != entity.instance.id) %}
             {% set url = ea_url()
+                .unsetAll()
+                .setController('App\\Controller\\Admin\\ContactCrudController')
                 .setAction('detail')
                 .setEntityId(contact.id)
-                .setController('App\\Controller\\Admin\\ContactCrudController')
+                .generateUrl()
             %}
             <tr>
                 <td>{{ contact.civility|trans }}</td>

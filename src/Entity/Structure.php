@@ -118,8 +118,11 @@ class Structure
     #[ORM\Column]
     private ?bool $is_receiving_festival_program = null;
 
-    #[ORM\OneToOne(mappedBy: 'structure_sending_festival_program', cascade: ['persist', 'remove'])]
-    private ?Contact $contact_receiving_festival_program = null;
+    /**
+     * @var Collection<int, Contact>
+     */
+    #[ORM\OneToMany(targetEntity: Contact::class, mappedBy: 'structure_sending_festival_program')]
+    private Collection $contacts_receiving_festival_program;
 
     public function __construct()
     {
@@ -128,6 +131,7 @@ class Structure
         $this->structure_type_specializations = new ArrayCollection();
         $this->newsletter_types = new ArrayCollection();
         $this->disciplines = new ArrayCollection();
+        $this->contacts_receiving_festival_program = new ArrayCollection();
     }
 
     public function __toString()
@@ -595,29 +599,32 @@ class Structure
         return $this;
     }
 
-    public function validate(ExecutionContextInterface $context, $payload)
-    {   
-        // $this->festival_program->validate($context, $payload);
+    /**
+     * @return Collection<int, Contact>
+     */
+    public function getContactsReceivingFestivalProgram(): Collection
+    {
+        return $this->contacts_receiving_festival_program;
     }
 
-    public function getContactReceivingFestivalProgram(): ?Contact
+    public function addContactsReceivingFestivalProgram(Contact $contactsReceivingFestivalProgram): static
     {
-        return $this->contact_receiving_festival_program;
+        if (!$this->contacts_receiving_festival_program->contains($contactsReceivingFestivalProgram)) {
+            $this->contacts_receiving_festival_program->add($contactsReceivingFestivalProgram);
+            $contactsReceivingFestivalProgram->setStructureSendingFestivalProgram($this);
+        }
+
+        return $this;
     }
 
-    public function setContactReceivingFestivalProgram(?Contact $contact_receiving_festival_program): static
+    public function removeContactsReceivingFestivalProgram(Contact $contactsReceivingFestivalProgram): static
     {
-        // unset the owning side of the relation if necessary
-        if ($contact_receiving_festival_program === null && $this->contact_receiving_festival_program !== null) {
-            $this->contact_receiving_festival_program->setStructureSendingFestivalProgram(null);
+        if ($this->contacts_receiving_festival_program->removeElement($contactsReceivingFestivalProgram)) {
+            // set the owning side to null (unless already changed)
+            if ($contactsReceivingFestivalProgram->getStructureSendingFestivalProgram() === $this) {
+                $contactsReceivingFestivalProgram->setStructureSendingFestivalProgram(null);
+            }
         }
-
-        // set the owning side of the relation if necessary
-        if ($contact_receiving_festival_program !== null && $contact_receiving_festival_program->getStructureSendingFestivalProgram() !== $this) {
-            $contact_receiving_festival_program->setStructureSendingFestivalProgram($this);
-        }
-
-        $this->contact_receiving_festival_program = $contact_receiving_festival_program;
 
         return $this;
     }

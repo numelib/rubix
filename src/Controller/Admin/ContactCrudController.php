@@ -170,8 +170,6 @@ class ContactCrudController extends AbstractCrudController
     {
         $entity = $this->getContext()->getEntity()->getInstance();
 
-        $formatFestivalProgramReceiptAddress = fn(Structure $structure) => $structure->__toString() . ' - ' . $structure->getFormattedAddress(oneline : true);
-
         return [
             FormField::addTab('PROFESSIONNEL'),
             FormField::addColumn(6),

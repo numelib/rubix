@@ -122,13 +122,10 @@ class Contact
     #[ORM\ManyToMany(targetEntity: NewsletterType::class, inversedBy: 'contacts')]
     private Collection $newsletter_types;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $festival_program_receipt_address = null;
-
     #[ORM\Column]
     private ?bool $is_receiving_festival_program = null;
 
-    #[ORM\OneToOne(inversedBy: 'contact_receiving_festival_program', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'contacts_receiving_festival_program')]
     private ?Structure $structure_sending_festival_program = null;
 
     public function __construct()
@@ -407,15 +404,17 @@ class Contact
         return $this;
     }
 
-    public function getFormattedAddress(): string
+    public function getFormattedAddress(bool $oneline = false): string
     {
+        $separator = $oneline ? ' ' : '<br>';
+
         $address = $this->getAddressStreet();
-        $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
+        $address .= $separator . $this->getAddressCode().' '.$this->getAddressCity();
 
         if($this->getAddressCountry() !== null) {
-            $address .= (Countries::exists($this->getAddressCountry())) ? '<br>' . Countries::getName($this->getAddressCountry()) : '<br>' . $this->getAddressCountry();
+            $address .= (Countries::exists($this->getAddressCountry())) ? $separator . Countries::getName($this->getAddressCountry()) : $separator . $this->getAddressCountry();
         }
-
+       
         return $address;
     }
 
@@ -687,16 +686,11 @@ class Contact
         }
     }
 
-    public function getFestivalProgramReceiptAddress(): ?string
+    public function getFestivalProgramAddress(bool $oneline = false): string
     {
-        return $this->festival_program_receipt_address;
-    }
+        if($this->isReceivingFestivalProgram()) return $this->getFormattedAddress($oneline);
 
-    public function setFestivalProgramReceiptAddress(?string $festival_program_receipt_address): static
-    {
-        $this->festival_program_receipt_address = $festival_program_receipt_address;
-
-        return $this;
+        return $this->getStructureSendingFestivalProgram()?->getFormattedAddress($oneline) ?? 'Aucune adresse d\'envoi du programme du festival';
     }
 
     public function getIsReceivingFestivalProgram(): ?bool

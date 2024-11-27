@@ -38,9 +38,9 @@ class ContactDetailType extends AbstractType
                 'class' => Structure::class,
                 'query_builder' => function (EntityRepository $er): QueryBuilder {
                     return $er->createQueryBuilder('structure')
-                        ->select('structure', 'contact_receiving_festival_program')
+                        ->select('structure', 'contacts_receiving_festival_program')
                         // Avoid the Doctrine "n+1" problem
-                        ->leftJoin('structure.contact_receiving_festival_program', 'contact_receiving_festival_program')
+                        ->leftJoin('structure.contacts_receiving_festival_program', 'contacts_receiving_festival_program')
                         ->orderBy('structure.name', 'ASC');
                 },
                 'choice_label' => fn(Structure $structure) => ($structure->getAddressCity() !== null && !empty($structure->getAddressCity())) ? $structure . ' - ' . $structure->getAddressCity() : $structure,

@@ -95,7 +95,8 @@ class EntitySpreadsheetGenerator
                     $structure = $entity;
 
                     if($structure->isReceivingFestivalProgram() === true) {
-                        $cell['value'] = $structure->getContactReceivingFestivalProgram()?->getFormattedAddress() ?? $structure->getFormattedAddress(oneline : true);
+                        $contactAddresses = array_map(fn(Contact $contact) => $contact->getFormattedAddress(oneline : true), $structure->getContactsReceivingFestivalProgram()->toArray());
+                        $cell['value'] = empty($contactAddresses) ? $structure->getFormattedAddress(oneline : true) : implode(', ', $contactAddresses);
                         $cell['vlaue'] = str_replace('<br>', ' ', $cell['value']);
                     } else {
                         $cell['value'] = 'Aucun.e';

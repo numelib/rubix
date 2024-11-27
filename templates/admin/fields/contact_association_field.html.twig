@@ -1,0 +1,18 @@
+{% set collection = field.value %}
+
+{% if collection|length == 0%}
+    <span>Aucun(e)</span>
+{% else %}
+    <ul class="ps-3">
+        {% for contact in collection %}
+            {% if contact != null %}
+                {% set url = ea_url()
+                    .setController('App\\Controller\\Admin\\ContactCrudController')
+                    .setAction('detail')
+                    .setEntityId(contact.id)    
+                %}
+                <li><a href="{{ url }}" target="_blank">{{ contact }}</a></li>
+            {% endif %} 
+        {% endfor %}
+    </ul>
+{% endif %}

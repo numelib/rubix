@@ -79,8 +79,8 @@ class StructureCrudController extends AbstractCrudController
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
         $queryBuilder
-            ->leftJoin('entity.contact_receiving_festival_program', 'contact_receiving_festival_program')
-            ->addSelect('contact_receiving_festival_program')
+            ->leftJoin('entity.contacts_receiving_festival_program', 'contacts_receiving_festival_program')
+            ->addSelect('contacts_receiving_festival_program')
         ;
         
         return $queryBuilder;
@@ -276,7 +276,7 @@ class StructureCrudController extends AbstractCrudController
             FormField::addFieldset('Général'),
             BooleanField::new('is_receiving_festival_program', $this->translator->trans('is_receiving_festival_program'))
                 ->hideOnIndex(),
-            AssociationField::new('contact_receiving_festival_program', $this->translator->trans('contact_receiving_festival_program'))
+            AssociationField::new('contacts_receiving_festival_program', $this->translator->trans('contacts_receiving_festival_program'))
                 ->setFormTypeOptions([
                     'query_builder' => function (ContactRepository $contactRepository) use ($entity) : QueryBuilder {
                         $queryBuilder = $contactRepository->createQueryBuilder('contact')
@@ -294,7 +294,9 @@ class StructureCrudController extends AbstractCrudController
 
                         return $queryBuilder;
                     },
+                    'by_reference' => false,
                 ])
+                ->setTemplatePath('admin/fields/contact_association_field.html.twig')
                 ->hideOnIndex(),
             AssociationField::new('near_parcs', $this->translator->trans('near_parcs'))
                 ->setTemplatePath('admin/fields/association_field.html.twig')

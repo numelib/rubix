@@ -28,9 +28,11 @@
                     <div class="field-value">
                         {% if contactDetail.structure != null %}
                             {% set url = ea_url()
+                                .unsetAll()
                                 .setController('App\\Controller\\Admin\\StructureCrudController')
                                 .setEntityId(contactDetail.structure.id)
                                 .setAction('detail')
+                                .generateUrl()
                             %}
                             <span><a href="{{ url }}">{{ contactDetail.structure }}</a></span>
                         {% endif %}

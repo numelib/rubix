@@ -70,7 +70,7 @@ contact_is_board_of_directors_member: 'Contact(s) associé(s) étant membre(s) d
 contact_is_organization_participant: 'Contact(s) associé(s) étant adhérent.e(s)'
 email_type: Email d'envoi du programme
 festival_program_is_sent: Envoi programme du festival
-contact_receiving_festival_program: Contact recevant le programme du festival
+contacts_receiving_festival_program: Contacts recevant le programme du festival
 
 Parameters: Paramètres
 Dashboard: Tableau de bord
