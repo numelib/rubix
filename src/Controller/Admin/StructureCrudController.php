@@ -109,17 +109,10 @@ class StructureCrudController extends AbstractCrudController
             ->add('newsletter_types')
         ;
 
-        $filters->add(
-            StructureContactFilter::new('contact:is_festival_participant', $this->translator->trans('contact_is_festival_participant'))
-        );
-
-        $filters->add(
-            StructureContactFilter::new('contact:is_board_of_directors_member', $this->translator->trans('contact_is_board_of_directors_member'))
-        );
-
-        $filters->add(
-            StructureContactFilter::new('contact:is_organization_participant', $this->translator->trans('contact_is_organization_participant'))
-        );
+        $filters
+            ->add('is_festival_partner')
+            ->add('is_company_programmed_in_festival')
+            ->add('is_workshop_partner');
 
         return $filters;
     }

@@ -144,17 +144,10 @@ class ContactCrudController extends AbstractCrudController
             ->add('is_receiving_festival_program')
             ->add('newsletter_types');
 
-        $filters->add(
-            ContactStructureFilter::new('structure:is_festival_partner', BooleanFilterType::class, label : $this->translator->trans('structure_is_festival_partner'))
-        );
-
-        $filters->add(
-            ContactStructureFilter::new('structure:is_company_programmed_in_festival', BooleanFilterType::class, label : $this->translator->trans('structure_is_company_programmed_in_festival'))
-        );
-
-        $filters->add(
-            ContactStructureFilter::new('structure:is_workshop_partner', BooleanFilterType::class, label : $this->translator->trans('structure_is_workshop_partner'))
-        );
+        $filters
+            ->add('is_festival_participant')
+            ->add('is_board_of_directors_member')
+            ->add('is_organization_participant');
 
         return $filters;
     }
