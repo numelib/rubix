@@ -3,7 +3,9 @@
 namespace App\Form\Admin;
 
 use App\Entity\ContactDetailPhoneNumber;
+use App\Transformer\DefaultValueTransformer;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -29,6 +31,11 @@ class ContactDetailPhoneNumberType extends AbstractType
                 'empty_data' => 33,
                 'label' => $this->translator->trans('code')
             ])
+            ->get('code')
+            ->addModelTransformer(new CallbackTransformer(
+                fn($code) : int => ($code === null) ? 33 : $code,
+                fn($code) : int => ($code === null) ? 33 : $code
+            ))
         ;
     }
 
