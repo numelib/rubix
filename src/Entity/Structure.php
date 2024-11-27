@@ -509,7 +509,7 @@ class Structure
             $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
 
             if($this->getAddressCountry() !== null) {
-                $address .= (Countries::exists($this->getAddressCountry())) ? '<br>' . Countries::getName($this->getAddressCountry()) : $this->getAddressCountry();
+                $address .= (Countries::exists($this->getAddressCountry())) ? '<br>' . Countries::getName($this->getAddressCountry()) : '<br>' . $this->getAddressCountry();
             }
         } else {
             $address = $this->getAddressStreet();
