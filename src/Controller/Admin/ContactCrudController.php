@@ -49,6 +49,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use App\Controller\Admin\Filter\HasStructureFilter;
 use App\Controller\Admin\Filter\HasStructureFunctionFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -128,13 +129,13 @@ class ContactCrudController extends AbstractCrudController
         );
 
         $filters->add(
-        ContactStructureFilter::new('structure:address_code', $this->translator->trans('structure_address_code'))
+        ContactStructureFilter::new('structure:address_code', ChoiceFilterType::class, ['value_type_options.multiple' => true], $this->translator->trans('structure_address_code'))
             ->setFormTypeOption('value_type_options.choices', $this->entityManager->getRepository(Contact::class)->findStructuresAddressCodes())
             ->setFormTypeOption('value_type_options.choice_label', fn($choice, string $key, mixed $value): string => $value)
         );
 
         $filters->add(
-        ContactStructureFilter::new('structure:address_city', $this->translator->trans('structure_address_city'))
+        ContactStructureFilter::new('structure:address_city', ChoiceFilterType::class, ['value_type_options.multiple' => true], $this->translator->trans('structure_address_city'))
             ->setFormTypeOption('value_type_options.choices', $this->entityManager->getRepository(Contact::class)->findStructuresAddressCity())
             ->setFormTypeOption('value_type_options.choice_label', fn($choice, string $key, mixed $value): string => $value)
         );
@@ -144,15 +145,15 @@ class ContactCrudController extends AbstractCrudController
             ->add('newsletter_types');
 
         $filters->add(
-            ContactStructureFilter::new('structure:is_festival_partner', $this->translator->trans('structure_is_festival_partner'))
+            ContactStructureFilter::new('structure:is_festival_partner', BooleanFilterType::class, label : $this->translator->trans('structure_is_festival_partner'))
         );
 
         $filters->add(
-            ContactStructureFilter::new('structure:is_company_programmed_in_festival', $this->translator->trans('structure_is_company_programmed_in_festival'))
+            ContactStructureFilter::new('structure:is_company_programmed_in_festival', BooleanFilterType::class, label : $this->translator->trans('structure_is_company_programmed_in_festival'))
         );
 
         $filters->add(
-            ContactStructureFilter::new('structure:is_workshop_partner', $this->translator->trans('structure_is_workshop_partner'))
+            ContactStructureFilter::new('structure:is_workshop_partner', BooleanFilterType::class, label : $this->translator->trans('structure_is_workshop_partner'))
         );
 
         return $filters;

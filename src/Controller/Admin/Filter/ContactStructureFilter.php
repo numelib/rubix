@@ -8,8 +8,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FilterDataDto;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\FilterTrait;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Filter\FilterInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use Exception;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
@@ -19,7 +17,7 @@ class ContactStructureFilter implements FilterInterface
 
     private string $alias;
 
-    public static function new(string $propertyName, $label = null): self
+    public static function new(string $propertyName, string $formTypeFqcn, array $formTypeOptions = [], $label = null): self
     {
         $alias = self::extractAliasFromPropertyName($propertyName);
         $structureFqcn = Structure::class;
@@ -28,27 +26,38 @@ class ContactStructureFilter implements FilterInterface
             throw new Exception('Argument #1 is invalid : cannot get a way to read property ' .  $alias . ' on instances of ' . $structureFqcn . ' Entity.');
         };
 
-        $formType = (str_starts_with($alias, 'is_')) ? BooleanFilterType::class : ChoiceFilterType::class;
-
         return (new self())
             ->setFilterFqcn(__CLASS__)
             ->setProperty($propertyName)
-            ->setFormType($formType)
+            ->setFormType($formTypeFqcn)
+            ->setFormTypeOptions($formTypeOptions)
             ->setLabel($label)
         ;
     }
 
     public function apply(QueryBuilder $queryBuilder, FilterDataDto $filterDataDto, ?FieldDto $fieldDto, EntityDto $entityDto): void
     {
-        if(null !== $filterDataDto->getValue()){
-            $property = $filterDataDto->getProperty();
-            $alias = self::extractAliasFromPropertyName($property);
-            $andWhere = 'structure.' . $alias . ' = :value';
+        if($filterDataDto->getValue() === null) return;
 
-            $queryBuilder->andWhere($andWhere);
+        $property = $filterDataDto->getProperty();
+        $alias = self::extractAliasFromPropertyName($property);
+
+        if(is_array($filterDataDto->getValue())) {
+            $andWhere = 'structure.' . $alias . ' IN';
+            $placeholders = [];
+            foreach($filterDataDto->getValue() as $key => $value)
+            {
+                $placeholders[] = ':value' . $key;
+                $queryBuilder->setParameter('value' . $key, $value);
+            }
+            $andWhere .= '(' . implode(', ', $placeholders) . ')';
+        } else {
+            $andWhere = 'structure.' . $alias . ' = :value';
+    
             $queryBuilder->setParameter('value', $filterDataDto->getValue());
-            ;
         }
+
+        $queryBuilder->andWhere($andWhere);
     }
 
     public static function extractAliasFromPropertyName(string $propertyName) : string
@@ -56,7 +65,4 @@ class ContactStructureFilter implements FilterInterface
         $propertyNameParts = explode(':', $propertyName);
         return end($propertyNameParts);
     }
-
-    
 }
-?>
