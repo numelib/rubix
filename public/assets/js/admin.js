@@ -98,7 +98,7 @@ $(document).ready(function () {
 
     if(easyAdminPage.entity === 'Structure' && formPages.includes(easyAdminPage.name)) {
         const FESTIVAL_PROGRAM_TOGGLE = document.querySelector('#Structure_is_receiving_festival_program');
-        const CONTACT_SELECT = document.querySelector('#Structure_contact_receiving_festival_program');
+        const CONTACT_SELECT = document.querySelector('#Structure_contacts_receiving_festival_program');
 
         const WARNING_PARAGRAPH = document.createElement('p');
         WARNING_PARAGRAPH.classList.add('text-warning', 'my-0', 'd-none');
