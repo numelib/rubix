@@ -2,7 +2,6 @@
 
 namespace App\Controller\Admin;
 
-use App\Controller\Admin\Filter\StructureContactFilter;
 use App\Entity\Contact;
 use App\Entity\Structure;
 use App\Entity\StructureTypeSpecialization;
@@ -38,7 +37,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -289,7 +287,8 @@ class StructureCrudController extends AbstractCrudController
                                 ->leftJoin('contact_details.structure', 'structure')
                                 ->addSelect('structure')
                                 ->where('structure = :structure')
-                                ->setParameter('structure', $entity);
+                                ->setParameter('structure', $entity)
+                                ->orderBy('contact.lastname', 'ASC');
                         }
 
                         return $queryBuilder;
