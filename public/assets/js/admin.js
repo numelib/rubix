@@ -239,4 +239,27 @@ $(document).ready(function () {
             updateTomselectsOnInputChange([output.tomselect], input);
         })
     }
+
+    if(easyAdminPage.name === EasyAdminPage.names.detail) {
+        const TABS = document.querySelectorAll('.nav-tabs [id^="tablist-tab"]');
+        const EDIT_LINK = document.querySelector('.action-edit[data-action-name="edit"]');
+        if(EDIT_LINK instanceof HTMLAnchorElement) {
+            const EDIT_URL = new URL(EDIT_LINK.href);
+            TABS.forEach((tab) => {
+                tab.addEventListener('show.bs.tab', function() {
+                    EDIT_URL.searchParams.set('tab', this.hash.substring(1))
+                    EDIT_LINK.href = EDIT_URL.href
+                })
+            })
+        }
+    }
+
+    if(easyAdminPage.name === EasyAdminPage.names.edit) {
+        const URL_PARAMS = new URLSearchParams(window.location.href);
+        if(URL_PARAMS.has('tab')) {
+            const TAB_NAME = URL_PARAMS.get('tab').replace(window.location.hash, '');
+            const TAB_ELEMENT = document.querySelector(`[href="#${TAB_NAME}"]`);
+            if(TAB_ELEMENT !== null) bootstrap.Tab.getOrCreateInstance(TAB_ELEMENT).show();
+        }
+    }
 });
