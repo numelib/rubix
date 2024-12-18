@@ -406,16 +406,18 @@ class Contact
 
     public function getFormattedAddress(bool $oneline = false): string
     {
-        $separator = $oneline ? ' ' : '<br>';
+        $separator = ($oneline) ? ' ' : '<br>';
 
-        $address = $this->getAddressStreet();
-        $address .= $separator . $this->getAddressCode().' '.$this->getAddressCity();
+        $addressLines = [
+            $this->getAddressAdition(),
+            $this->getAddressStreet(),
+            $this->getAddressCode() . ' ' . $this->getAddressCity(),
+            (is_string($this->getAddressCountry()) && Countries::exists($this->getAddressCountry())) ? Countries::getName($this->getAddressCountry()) : $this->getAddressCountry(),
+        ];
 
-        if($this->getAddressCountry() !== null) {
-            $address .= (Countries::exists($this->getAddressCountry())) ? $separator . Countries::getName($this->getAddressCountry()) : $separator . $this->getAddressCountry();
-        }
-       
-        return $address;
+        $addressLines = array_filter($addressLines, fn(?string $line) => !empty(str_replace(' ', '', $line)));
+
+        return implode($separator, $addressLines);
     }
 
 

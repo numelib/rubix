@@ -508,25 +508,18 @@ class Structure
 
     public function getFormattedAddress(bool $oneline = false): string
     {
-        if(!$oneline) {
-            $address = $this->getAddressStreet();
-            $address .= '<br>' . $this->getAddressCode().' '.$this->getAddressCity();
+        $separator = ($oneline) ? ' ' : '<br>';
 
-            if($this->getAddressCountry() !== null) {
-                $address .= (Countries::exists($this->getAddressCountry())) ? '<br>' . Countries::getName($this->getAddressCountry()) : '<br>' . $this->getAddressCountry();
-            }
-        } else {
-            $address = $this->getAddressStreet();
-            $address .= ' - ';
-            $address .= $this->getAddressCode().' '.$this->getAddressCity();
-            $address .= ' ';
+        $addressLines = [
+            $this->getAddressAdition(),
+            $this->getAddressStreet(),
+            $this->getAddressCode() . ' ' . $this->getAddressCity(),
+            (is_string($this->getAddressCountry()) && Countries::exists($this->getAddressCountry())) ? Countries::getName($this->getAddressCountry()) : $this->getAddressCountry(),
+        ];
 
-            if($this->getAddressCountry() !== null) {
-                $address .= (Countries::exists($this->getAddressCountry())) ? Countries::getName($this->getAddressCountry()) : $this->getAddressCountry();
-            }
-        }
+        $addressLines = array_filter($addressLines, fn(?string $line) => !empty(str_replace(' ', '', $line)));
 
-        return $address;
+        return implode($separator, $addressLines);
     }
 
     public function getContacts()

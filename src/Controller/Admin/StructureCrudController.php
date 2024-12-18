@@ -243,8 +243,6 @@ class StructureCrudController extends AbstractCrudController
                 ->hideOnDetail()
                 ->hideOnIndex()
                 ->setEmptyData('FR'),
-            Field::new('address_adition', $this->translator->trans('address_adition'))
-                ->hideOnForm(),
             Field::new('formatted_address', $this->translator->trans('Address'))
                 ->hideOnForm()
                 ->setFormTypeOptions([
