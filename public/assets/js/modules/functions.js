@@ -28,14 +28,14 @@ function initContactDetailsObserver(professionalTab) {
 function updateOrInsertOption(tomSelect, oldValue, newValue, optgroupId = null) {
     const option = { value : newValue , text : newValue };
     if(optgroupId !== null) option.optgroup = optgroupId; 
-    
+
     if(newValue === '') {
         tomSelect.removeOption(oldValue);
         tomSelect.refreshItems();
         return;
     }
 
-    if(tomSelect.options[oldValue] !== undefined) {
+    if(oldValue !== '' && tomSelect.options[oldValue] !== undefined) {
         tomSelect.updateOption(oldValue, option);
         tomSelect.refreshItems();
     } else {
