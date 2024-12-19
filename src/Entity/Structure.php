@@ -173,7 +173,7 @@ class Structure
         return $this->phone_number;
     }
 
-    public function setPhoneNumber(string $phone_number): static
+    public function setPhoneNumber(?string $phone_number): static
     {
         $this->phone_number = $phone_number;
 

@@ -14,7 +14,16 @@ use App\Entity\Structure;
 use App\Entity\StructureType;
 use App\Entity\StructureTypeSpecialization;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Entity;
+use Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionProperty;
+use ReflectionType;
+use ReflectionUnionType;
+use SplFixedArray;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,6 +31,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Throwable;
 
 // the name of the command is what users type after "php bin/console"
@@ -33,6 +43,7 @@ class ExcelImportCommand extends Command
     public function __construct(EntityManagerInterface $entityManager)
     {
         parent::__construct('app:excel-import');
+
         $this->entityManager = $entityManager;
     }
 
@@ -60,576 +71,302 @@ class ExcelImportCommand extends Command
 
         $connection->executeQuery($sql);
 
-        $this->getStructuresFromExcel();
-        $this->getContactsFromExcel();
+        $importCallback = $this->getImportStructuresCallback();
+        $this->importExcel('193soleil-dataset-structures', 'A3', 'AG1516', Structure::class, $importCallback);
+
+        $importCallback = $this->getImportContactsCallback();
+        $this->importExcel('193soleil-dataset-contacts', 'A3', 'AS1130', Contact::class, $importCallback);
 
         return Command::SUCCESS;
     }
 
-    private function getStructuresFromExcel() : array
+    /**
+     * @param string $filename - Le nom du fichier présent dans le dossier "public/spreadsheets", sans l'extension.
+     * @param string $startCell - La coordonée de la cellule de départ du fichier (ex: A2).
+     * @param string $endCell - La coordonée de la cellule de fin du fichier (ex: F32).
+     * @param string $entityFqcn - Le FQCN de l'entité que vous souhaitez persister en base de données.
+     * @param callable(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $worksheet, int $col, int $row, \App\Entity $entity) : void $callback - La fonction de rappel appliquée pour chaque cellule.
+     */
+    public function importExcel(string $filename, string $startCell, string $endCell, string $entityFqcn, callable $callback) : void
     {
-        $filesystem = new Filesystem();
-        $inputFileName = './public/spreadsheets/193soleil-dataset-structures.xlsx';
-
-        $fields = [
-            'name',
-            'email',
-            'phone_number',
-            'address_street',
-            'address_adition',
-            'address_code',
-            'address_city',
-            'address_country',
-            'website',
-            'structure_type.name',
-            'structure_type_specializations[0].name',
-            'structure_type_specializations[1].name',
-            'structure_type_specializations[2].name',
-            'discipline[0].name',
-            'discipline[1].name',
-            'discipline[2].name',
-            'is_festival_organizer',
-            'structure_notes',
-            'is_receiving_festival_program',
-            'near_parcs[0].name',
-            'near_parcs[1].name',
-            'near_parcs[2].name',
-            'newsletter_types[0].name',
-            'newsletter_email',
-            'newsletter_types[1].name',
-            'newsletter_email(duplicate)',
-            'newsletter_types[2].name',
-            'newsletter_email(duplicate)',
-            'communication_notes',
-            'is_festival_partner',
-            'is_company_programmed_in_festival',
-            'is_workshop_partner',
-            'organization_notes'
-        ];
-
-        // Utilisé pour retrouver le champ de l'entité associé à une colonne
-        $columnMapping = [];
-        $column = 'A';
-        $index = '0';
-        for($index; $index <= count($fields) - 1; $index++)
-        {
-            $columnMapping[$index] = $column;
-            $column++;
-        }
-
+        $inputFileName = './public/spreadsheets/' . $filename . '.xlsx';
         $spreadsheet = IOFactory::load($inputFileName);
+        $worksheet = $spreadsheet->getActiveSheet();
 
-        $rows = $spreadsheet->getActiveSheet()->rangeToArray(
-            'A3:AG1516',     // The worksheet range that we want to retrieve
-            null,        // Value that should be returned for empty cells
-            false,        // Should formulas be calculated (the equivalent of getCalculatedValue() for each cell)
-            false,        // Should values be formatted (the equivalent of getFormattedValue() for each cell)
-            TRUE         // Should the array be indexed by cell row and cell column
-        );
+        [$startCol, $startRow] = $this->getCoordinatedIndexes($startCell);
+        [$endCol, $endRow] = $this->getCoordinatedIndexes($endCell);
 
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+        if(!class_exists($entityFqcn)) {
+            throw new Exception('Class : ' . $entityFqcn . ' does not exists');
+        }
 
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-
-        $newParcs = [];
-        $newStructureTypes = [];
-        $structures = [];
-        foreach($rows as $rowIndex => $columns)
-        {
-            $structure = new Structure();
-
-            for($index = 0; $index <= count($columns) - 1; $index++)
-            {
-                $column = $columnMapping[$index];
-                $value = $columns[$column];
-                $field = $fields[$index];
-
-                $value = (str_starts_with($field, 'is_')) ? $this->getBooleanValueOfCell($value) : $this->getStringValueOfCell($value);
-
-                if($propertyAccessor->isWritable($structure, $field)) {
-                    $value = match($field) {
-                        'address_code' => (int) $value,
-                        default => $value,
-                    };
-
-                    if($value === null) continue;
-
-                    $propertyAccessor->setValue($structure, $field, $value);
-                } else {
-
-                    if(str_starts_with($field,'discipline')) {
-                        $value = match($value) {
-                            'x' => null,
-                            default => $value,
-                        };
-
-                        if($value !== null) {
-                            $discipline = $this->entityManager->getRepository(Discipline::class)->findOneBy(['name' => $value]);
-
-                            ($discipline !== null) ? $structure->addDiscipline($discipline) : dump('Innexistant discipline : ' . $value);
-                        }
-                       
-                        continue;
-                    }
-
-                    if(str_starts_with($field, 'near_parcs')) {
-                        $value = $this->getStringValueOfCell($value);
-
-                        if($value === null) continue;
-
-                        $nearParc = $this->entityManager->getRepository(Parc::class)->findOneBy(['name' => $value]);
-
-                        if($nearParc !== null) {
-                            $structure->addNearParc($nearParc);
-                        } else {
-                            dump('Innexistant parc : ' . $value);
-                        
-                            if(!in_array($value, $newParcs)) {
-                                $newParcs[] = $value;
-
-                                $parc = (new Parc())->setName($value);
-                                $this->entityManager->persist($parc);
-                                $structure->addNearParc($parc);
-                            }
-                        }
-                    }
-
-                    if($field === 'structure_type.name') {
-                        $value = match($value) {
-                            'x' => null,
-                            default => $value,
-                        };
-
-                        if($value === null) continue;
-
-                        $structureType = $this->entityManager->getRepository(StructureType::class)->findOneBy(['name' => $value]);
-
-                        if($structureType !== null) {
-                            $structure->setStructureType($structureType);
-                        } else {
-                            dump('Innexistant structure type : ' . $value);
-                        }
-                        continue;
-                    }
-
-                    if(str_starts_with($field, 'structure_type_specializations')) {
-                        for($i = 0; $i <= 2; $i++)
-                        {
-                            $column = $columnMapping[$index];
-                            $value = $columns[$column];
-
-                            $value = trim($value);
-
-                            $value = match($value) {
-                                'x' => null,
-                                '' => null,
-                                default => ucwords($value),
-                            };           
-
-                            if($value === null || empty($value)) continue;
-
-                            $structureTypeSpecialization = $this->entityManager->getRepository(StructureTypeSpecialization::class)->findOneBy(['name' => $value]);
-
-                            if($structureTypeSpecialization !== null) {
-                                $structure->addStructureTypeSpecialization($structureTypeSpecialization);
-                            } else {
-                                dump('Innexistant structure type specialization : ' . $value);
-
-                                if(!in_array($value, $newStructureTypes)) {
-                                    $newStructureTypes[] = $value;
-
-                                    $structureTypeSpecialization = (new StructureTypeSpecialization())->setName($value);
-                                    $structure->addStructureTypeSpecialization($structureTypeSpecialization);
-                                }
-                            }
-
-                            $index++;
-                        }
-                    }
-
-                    if(str_starts_with($field, 'newsletter_types')) {
-                        $column = $columnMapping[$index + 1];
-                        $value = $columns[$column];
-
-                        $value = trim($value);
-
-                        $value = match($value) {
-                            'x' => null,
-                            '' => null,
-                            default => $value,
-                        };
-
-                        if($value === null || empty($value)) continue;
-
-                        $structure->setNewsletterEmail($value);
-
-                        for($i = 0; $i <= 2; $i++)
-                        {
-                            $column = $columnMapping[$index];
-                            $value = $columns[$column];
-
-                            $value = match($value) {
-                                'x' => null,
-                                default => $value,
-                            };
-
-                            if($value === null) continue;
-                            
-
-                            $newsletterType = $this->entityManager->getRepository(NewsletterType::class)->findOneBy(['name' => $value]);
-
-                            if($newsletterType !== null) {
-                                $structure->addNewsletterType($newsletterType);
-                            } else {
-                                dump('Innexistant newsletter type : ' . $value);
-                            }
-
-                            $index = $index + 2;
-                        }
-
-                        $index = $index - 2;
-                    }
-                }
+        for ($row = $startRow; $row <= $endRow; ++$row) {
+            $entity = new $entityFqcn();
+            for ($col = $startCol; $col <= $endCol; ++$col) {
+                $callback($worksheet, $col, $row, $entity);
             }
-
-            $structures[] = $structure;
-            if(isset($structureNames[$structure->getName()])) {
-                $duplicatedNames[] = $structure->getName();
-            } else {
-                $structureNames[$structure->getName()] = $structure->getName();
-            }
-
-            $this->entityManager->persist($structure);
+            $this->entityManager->persist($entity);
+            $this->entityManager->flush();
         }
-
-        $this->entityManager->flush();
-
-        dump('Structures : ' . count($structures));
-        dump('Structures dupliquées : ' . count($duplicatedNames));
-        dump('Structures uniques : ' . count($structures) - count($duplicatedNames));
-        
-        $spreadsheetWarningFilepath = 'public/spreadsheets/spreedsheet-warnings.txt';
-        if($filesystem->exists($spreadsheetWarningFilepath)) {
-            $filesystem->remove($spreadsheetWarningFilepath);
-        }
-        $filesystem->appendToFile($spreadsheetWarningFilepath, 'Sous types de structures renseignés dans le fichier Excel "Structures" mais n\'étant pas lié à un type de Structure particulier : ');
-        $filesystem->appendToFile($spreadsheetWarningFilepath, "\n\n");
-        foreach($newStructureTypes as $structureType)
-        {
-            $filesystem->appendToFile($spreadsheetWarningFilepath, ' - ' . $structureType);
-            $filesystem->appendToFile($spreadsheetWarningFilepath, "\n");
-        }
-        $filesystem->appendToFile($spreadsheetWarningFilepath, "\n");
-        $filesystem->appendToFile($spreadsheetWarningFilepath, 'NB : ces sous-types ont été créés et rajoutés dans la base de données malgré tout.');
-
-        return $structures;
     }
 
-    private function getContactsFromExcel() : array
+    private function getCoordinatedIndexes(string $coordinates) : array
     {
-        $filesystem = new Filesystem();
-        $inputFileName = './public/spreadsheets/193soleil-dataset-contacts.xlsx';
-
-        $fields = [
-            'civility',
-            'firstname',
-            'lastname',
-            'website',
-            'contact_details[0].email',
-            'contact_details[0].contact_details_phone_numbers[0].phone_number',
-            'contact_details[0].contact_details_phone_numbers[1].phone_number',
-            'contact_details[0].structure_function',
-            'contact_details[0].structure',
-            'contact_details[1].email',
-            'contact_details[1].contact_details_phone_numbers[0].phone_number',
-            'contact_details[1].contact_details_phone_numbers[1].phone_number',
-            'contact_details[1].structure_function',
-            'contact_details[1].structure',
-            'profile_types[0].name',
-            'profile_types[1].name',
-            'profile_types[2].name',
-            'is_workshop_artist',
-            'disciplines[0].name',
-            'disciplines[1].name',
-            'disciplines[2].name',
-            'formationParticipantTypes[0].name',
-            'formationParticipantTypes[1].name',
-            'formationParticipantTypes[2].name',
-            'is_formation_speaker',
-            'professional_notes',
-            'personnal_email',
-            'personnal_phone_number',
-            'address_street',
-            'address_adition',
-            'address_code',
-            'address_city',
-            'address_country',
-            'personnal_notes',
-            'newsletter_types[0].name',
-            'newsletter_email',
-            'newsletter_types[1].name',
-            'newsletter_email(duplicate)',
-            'newsletter_types[2].name',
-            'newsletter_email(duplicate)',
-            'is_receiving_festival_program',
-            'communication_notes',
-            'is_festival_participant',
-            'is_board_of_directors_member',
-            'is_organization_participant',
-        ];
-
-        $columnsNames = [];
-        $column = 'A';
-        $index = '0';
-        for($index; $index <= count($fields) - 1; $index++)
-        {
-            $columnsNames[$index] = $column;
-            $column++;
+        preg_match('/^([A-Z]+)([0-9]+)/', $coordinates, $matches);
+        if(count($matches) !== 3) {
+            throw new Exception('Argument #1 must match this expression : /^([A-Z]+)([0-9]+)/');
         }
 
-        $spreadsheet = IOFactory::load($inputFileName);
+        $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($matches[1]);
 
-        $rows = $spreadsheet->getActiveSheet()->rangeToArray(
-            'A3:AS1131',     // The worksheet range that we want to retrieve
-            null,        // Value that should be returned for empty cells
-            false,        // Should formulas be calculated (the equivalent of getCalculatedValue() for each cell)
-            false,        // Should values be formatted (the equivalent of getFormattedValue() for each cell)
-            TRUE         // Should the array be indexed by cell row and cell column
-        );
+        return [$column, (int) $matches[2]];
+    }
 
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-
-        $innexistantStructures = [];
-        $duplicatedStructures = [];
-        $emptyContactDetails = [];
-        $contacts = [];
-        foreach($rows as $columns)
-        {
-            $contact = new Contact();
-
-            for($index = 0; $index <= count($columns) - 1; $index++)
-            {
-                $getColumnNameAtColIndex = function(int $index) use ($columnsNames) { return $columnsNames[$index]; };
-                $getCellValueAtColIndex = function(int $index) use ($columns, $getColumnNameAtColIndex) { return $columns[$getColumnNameAtColIndex($index)]; };
-                $column = $columnsNames[$index];
-                $value = $getCellValueAtColIndex($index);
-                $field = $fields[$index];
-
-                $value = (str_starts_with($field, 'is_')) ? $this->getBooleanValueOfCell($value) : $this->getStringValueOfCell($value);
-
-                if($propertyAccessor->isWritable($contact, $field)) {
-                    $value = match($field) {
-                        'address_code' => ($value !== null) ? (int) $value : null,
-                        'firstname' => ($value === null) ? '' : $value,
-                        default => $value,
-                    };          
-                    
-                    if($field === 'civility') {
-                        $value = match($value) {
-                            'madame' => 'F',
-                            'Madame' => 'F',
-                            'monsieur' => 'M',
-                            'Monsieur' => 'M',
-                            default => dump('Undefined civility : ' . $value),
-                        };
-                    }
-
-                    if($value === null) continue;
-
-                    $propertyAccessor->setValue($contact, $field, $value);
-                } else {
-
-                    // Coordonnées contact
-                    if(str_starts_with($field, 'contact_details')) {
-                        $contactDetail = new ContactDetail();
-    
-                        // Email
-                        if($value !== null) $contactDetail->setEmail($value);
-                        $index++;
-                        
-                        // Numéros de téléphone
-                        for($i = 0; $i < 2; $i++) {
-                            $value = $getCellValueAtColIndex($index);
-                            $phoneNumber = $this->getStringValueOfCell($value);
-
-                            if($phoneNumber !== null) {
-                                $contactDetailPhoneNumber = (new ContactDetailPhoneNumber())->setPhoneNumber($phoneNumber);
-                                $contactDetail->addContactDetailPhoneNumber($contactDetailPhoneNumber);
-                            }
-    
-                            $index++;
-                        }
-
-                        // Structure function
-                        $value = $getCellValueAtColIndex($index);
-                        $structureFunction = $this->getStringValueOfCell($value);
-
-                        if($structureFunction !== null) {
-                            $contactDetail->setStructureFunction($structureFunction);
-                        }
-                        $index++;
-                        
-                        // Structure 
-
-                        // A définir avec le tableau excel des structures
-                        $value = $getCellValueAtColIndex($index);
-                        $structureName = $this->getStringValueOfCell($value);
-
-
-                        $structures = $this->entityManager->getRepository(Structure::class)->findBy(['name' => $structureName]);
-
-                        if($structureName !== null) {
-                            if(count($structures) === 0 && !in_array($structureName, $innexistantStructures)) {
-                                $innexistantStructures[] = $structureName;
-                                $structure = (new Structure())
-                                    ->setName($structureName)
-                                    ->setIsFestivalOrganizer(false)
-                                    ->setIsCompanyProgrammedInFestival(false)
-                                    ->setIsWorkshopPartner(false)
-                                    ->setIsReceivingFestivalProgram(false)
-                                    ->setIsFestivalPartner(false);
-                                $contactDetail->setStructure($structure);
-                            } else if(count($structures) > 1) {
-                                $duplicatedStructures[] = $structureName;
-                            } else if(count($structures) === 1) {
-                                $contactDetail->setStructure($structures[0]);
-                            }
-                        }
-
-                        if(
-                            $contactDetail->getEmail() === null &&
-                            $contactDetail->getContactDetailPhoneNumbers()->count() === 0 &&
-                            $contactDetail->getStructureFunction() === null &&
-                            $contactDetail->getStructure() === null
-                        ) {
-                            $emptyContactDetails[] = $contact->getFirstname() . ' ' . $contact->getLastname();
-                        } else {
-                            $contact->addContactDetail($contactDetail);
-                        }
-
-                        continue;
-                    }
-
-                    if(str_starts_with($field, 'profile_types')) {
-                        $value = match($value) {
-                            'Artistes' => 'Artiste',
-                            default => $value,
-                        };
-
-                        if($value !== null) {
-                            $profileType = $this->entityManager->getRepository(ProfileType::class)->findOneBy(['name' => $value]);
-                        
-                            ($profileType !== null) ? $contact->addProfileType($profileType) : dump('Innexistant profile type : ' . $value);
-                        }
-                       
-                        continue;
-                    }
-
-
-                    if(str_starts_with($field, 'disciplines')) {
-                        $profileType = $this->entityManager->getRepository(ProfileType::class)->findOneBy(['name' => 'Artiste']);
-                        $discipline = $this->entityManager->getRepository(Discipline::class)->findOneBy(['name' => $value]);
-
-                        if($value !== null) {
-                            ($discipline !== null) ? $contact->addDiscipline($discipline) : dump('Innexistant discipline : ' . $value);
-                        }
-
-                        continue;
-                    }
-
-                    if(str_starts_with($field, 'formationParticipantTypes')) {
-                        if($value === null) continue;
-
-                        $formationParticipantType = $this->entityManager->getRepository(FormationParticipantType::class)->findOneBy(['name' => $value]);
-                        if($formationParticipantType !== null) {
-                            $contact->addFormationParticipantType($formationParticipantType);
-                        } else {
-                            $formationParticipantType = (new FormationParticipantType())->setName($value);
-                            $contact->addFormationParticipantType($formationParticipantType);
-                        }
-
-                        continue;
-                    }
-
-
-                    if(str_starts_with($field, 'newsletter_types[0]') || str_starts_with($field, 'newsletter_types[1]')) {
-                        $newsletterEmail = $getCellValueAtColIndex($index + 1);
-                        $newsletterEmail = $this->getStringValueOfCell($newsletterEmail);
-                        $contact->setNewsletterEmail($newsletterEmail);
-
-                        for($i = 0; $i <= 2; $i++)
-                        {
-                            $value = $getCellValueAtColIndex($index);
-                            $newsletterTypeName = $this->getStringValueOfCell($value);
-
-                            if($newsletterTypeName !== null) {
-                                $newsletterType = $this->entityManager->getRepository(NewsletterType::class)->findOneBy(['name' => $newsletterTypeName]);
-                        
-                                ($newsletterType !== null) ? $contact->addNewsletterType($newsletterType) : dump('Innexistant newsletter type : ' . $newsletterTypeName);
-                            }
-
-                            $index = $index + 2;
-                        }
-
-                        $index--;
-                        
-                        continue;
-                    }                    
-                }
-            }
-
-            $contacts[] = $contact;
-
-            $this->entityManager->persist($contact);
+    private function convertCellValueTo(?string $value, ?string $castType) : mixed
+    {       
+        if($castType === 'bool') {
+            return match($value) {
+                'Oui' => true,
+                'Non' => false,
+                'non' => false,
+                'oui' => true,
+                'x' => false,
+                '' => false,
+                '...' => false,
+                null => false,
+            };
         }
 
-        $this->entityManager->flush();
+        if($castType === 'int') {
+            return (intval($value) !== 0) ? intval($value) : $value ;
+        }
 
-        dump('Contacts dont une coordonnées est entièrement vide : ' . count($emptyContactDetails));
-        dump('Structures innexistantes et crées à la volée : ' . count($innexistantStructures));
-        dump('Structures dont le nom a été référencé plusieurs fois dans le fichier Structures : ' . count($duplicatedStructures));
-
-        $spreadsheetWarningFilepath = 'public/spreadsheets/spreedsheet-warnings.txt';
-        $filesystem->appendToFile($spreadsheetWarningFilepath, "\n\n");
-        $filesystem->appendToFile($spreadsheetWarningFilepath, 'Export fichier "Contacts" : Structures dont le nom est dupliqué dans la base de données (impossible de savoir à quelle structure le contact est relié) : ');
-        foreach($duplicatedStructures as $structureName)
-        {
-            $filesystem->appendToFile($spreadsheetWarningFilepath, ' - ' . $structureName);
-            $filesystem->appendToFile($spreadsheetWarningFilepath, "\n");
-        } 
-        $filesystem->appendToFile($spreadsheetWarningFilepath, 'Export fichier "Contacts" : Structures dont le nom indiqué ne fait référence à aucune Structure présente dans le fichier "Structures" : ');
-        $filesystem->appendToFile($spreadsheetWarningFilepath, 'NB : ces structures ont été créés à la volée et ont été liées aux contacts. Vous pourrez donc modifier ces structures directement depuis l\'application pour renseigner les données manquantes.');
-        $filesystem->appendToFile($spreadsheetWarningFilepath, "\n\n");
-        foreach($innexistantStructures as $structureName)
-        {
-            $filesystem->appendToFile($spreadsheetWarningFilepath, ' - ' . $structureName);
-            $filesystem->appendToFile($spreadsheetWarningFilepath, "\n");
-        } 
-        return $contacts;
-    }
-
-
-    public function getBooleanValueOfCell(?string $cell) : bool
-    {
-        $value = trim($cell);
-        return match($value) {
-            'Oui' => true,
-            'Non' => false,
-            'non' => false,
-            'oui' => true,
-            'x' => false,
-            '' => false,
-            null => false,
-        };
-    }
-
-    public function getStringValueOfCell(?string $cell) : ?string
-    {
-        $value = trim($cell);
         return match($value) {
             '' => null,
+            '...' => null,
             'x' => null,
-            default => $value,
+            'Madame' => 'F',
+            'Monsieur' => 'M',
+            default => $value
         };
+    }
+
+    private function getMainTypeOfProperty(ReflectionProperty $property) : ?string
+    {
+        $reflectionType = $property->getType();
+
+        if($reflectionType instanceof ReflectionNamedType && $reflectionType->isBuiltIn()) {
+            return $reflectionType->getName();
+        }
+
+        if($reflectionType instanceof ReflectionUnionType && $reflectionType?->getTypes()[1]->isBuiltIn()) {
+            return $reflectionType?->getTypes()[1]->getName();
+        }
+
+        return null;
+    }
+
+    private function getImportStructuresCallback() : callable
+    {
+        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+        $structureReflection = new ReflectionClass(Structure::class);
+
+        return function(Worksheet $worksheet, int $col, int $row, Structure $structure) use ($propertyAccessor, $structureReflection) {
+            $colHeader = trim($worksheet->getCell([$col, 2])->getValue());
+            $value = trim($worksheet->getCell([$col, $row])->getValue());
+            $value = $this->convertCellValueTo($value, 'string');
+
+            $propertyName = match($colHeader) {
+                'Nom de la structure' => 'name',
+                'Email générique' => 'email',
+                'Téléphone générique' => 'phone_number',
+                'Rue' => 'address_street',
+                'Complément' => 'address_adition',
+                'Code postal' => 'address_code',
+                'Ville' => 'address_city',
+                'Pays' => 'address_country',
+                'Site internet' => 'website',
+                'Organisation d’un festival' => 'is_festival_organizer',
+                'Notes de structure' => 'structure_notes',
+                'Envoi programme du festival' => 'is_receiving_festival_program',
+                'Mail de réception' => 'newsletter_email',
+                'Notes de communication' => 'communication_notes',
+                'Partenaire du festival' => 'is_festival_partner',
+                'Compagnie programmée dans le festival' => 'is_company_programmed_in_festival',
+                'Structure partenaire ateliers' => 'is_workshop_partner',
+                'Notes de l’association' => 'organization_notes',
+                default => null
+            };
+
+            $property = ($propertyName) ? $structureReflection->getProperty($propertyName) : null;
+            if($property !== null && ($type = $this->getMainTypeOfProperty($property)) !== null && $propertyAccessor->isWritable($structure, $property->getName())) {
+                $value = $this->convertCellValueTo($value, $type);
+
+                // Cas particulier pour les codes postaux amériacians qui ne sont pas composés uniquement de chiffres
+                if($type === 'int' && gettype($value) === 'string') {
+                    dump($colHeader, $value);
+                    return;
+                }
+
+                if($value !== null) {
+                    $propertyAccessor->setValue($structure, $property->getName(), $value);
+                    return;
+                }
+            }
+
+            switch(true) {
+                case $colHeader === 'Type' && $value !== null: 
+                    $type = $this->findOrCreateEntity(StructureType::class, $propertyAccessor, 'name', $value);
+                    $structure->setStructureType($type);
+                    break;
+
+                case str_starts_with($colHeader, 'Sous type') && $value !== null: 
+                    $specialization = $this->findOrCreateEntity(StructureTypeSpecialization::class, $propertyAccessor, 'name', $value);
+                    $structure->addStructureTypeSpecialization($specialization);
+                    break;
+
+                case str_starts_with($colHeader, 'Discipline') && $value !== null: 
+                    $discipline = $this->findOrCreateEntity(Discipline::class, $propertyAccessor, 'name', $value);
+                    $structure->addDiscipline($discipline);
+                    break;
+
+                case str_starts_with($colHeader, 'Parc') && $value !== null: 
+                    $parc = $this->findOrCreateEntity(Parc::class, $propertyAccessor, 'name', $value);
+                    $structure->addNearParc($parc);
+                    break;
+
+                case str_starts_with($colHeader, 'Envoi newsletter') && $value !== null: 
+                    $newsletter = $this->findOrCreateEntity(NewsletterType::class, $propertyAccessor, 'name', $value);
+                    $structure->addNewsletterType($newsletter);
+                    break;
+
+                default :
+                    if($value !== null) dump('Value not assignable. Field : ' . $colHeader . '. Value : ' . $value);
+            }
+        };
+    }
+
+    private function getImportContactsCallback() : callable
+    {
+        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+        $contactReflection = new ReflectionClass(Contact::class);
+
+        return function(Worksheet $worksheet, int $col, int $row, Contact $contact) use ($propertyAccessor, $contactReflection) {
+            $colHeader = trim($worksheet->getCell([$col, 2])->getValue());
+            $value = trim($worksheet->getCell([$col, $row])->getValue());
+            $value = $this->convertCellValueTo($value, 'string');
+
+            $propertyName = match($colHeader) {
+                'Civilité' => 'civility',
+                'Prénom' => 'firstname',
+                'Nom' => 'lastname',
+                'Site internet' => 'website',
+                'Rue' => 'address_street',
+                'Artiste ateliers' => 'is_workshop_artist',
+                'Intervenant de formation' => 'is_formation_speaker',
+                'Notes professionnelles' => 'professional_notes',
+                'Email personnel' => 'personnal_email',
+                'Numéro de téléphone personnel' => 'personnal_phone_number',
+                'Rue' => 'address_street',
+                'Complément d’adresse' => 'address_adition',
+                'Code postal' => 'address_code',
+                'Ville' => 'address_city',
+                'Pays' => 'address_country',
+                'Notes personnelles' => 'personnal_notes',
+                'Mail de réception' => 'newsletter_email',
+                'Envoi programme festival' => 'is_receiving_festival_program',
+                'Bénévole au festival' => 'is_festival_participant',
+                'Membre du CA' => 'is_board_of_directors_member',
+                'Adhérent' => 'is_organization_participant',
+                default => null
+            };
+
+            $property = ($propertyName) ? $contactReflection->getProperty($propertyName) : null;
+            if($property !== null && ($type = $this->getMainTypeOfProperty($property)) !== null && $propertyAccessor->isWritable($contact, $property->getName())) {
+                $value = $this->convertCellValueTo($value, $type);
+
+                if($value !== null) {
+                    $propertyAccessor->setValue($contact, $property->getName(), $value);
+                    return;
+                }
+            }
+
+            switch(true) {
+                case str_starts_with($colHeader, 'Email') : 
+                    $contactDetail = (new ContactDetail())->setEmail($value);
+                    $contact->addContactDetail($contactDetail);
+                    break;
+
+                case str_starts_with($colHeader, 'Tél fixe') && $value !== null:
+                case str_starts_with($colHeader, 'Tél mobile') && $value !== null:
+                    /** @var \App\Entity\ContactDetail */
+                    $contactDetail = $contact->getContactDetails()->last();
+                    $phoneNumber = (new ContactDetailPhoneNumber())->setPhoneNumber($value);
+                    $contactDetail->addContactDetailPhoneNumber($phoneNumber);
+                    break;
+
+                case str_starts_with($colHeader, 'Fonction') && $value !== null: 
+                    /** @var \App\Entity\ContactDetail */
+                    $contactDetail = $contact->getContactDetails()->last();
+                    $contactDetail->setStructureFunction($value);
+                    break;
+
+                case str_starts_with($colHeader, 'Structure') && $value !== null: 
+                    /** @var \App\Entity\ContactDetail */
+                    $contactDetail = $contact->getContactDetails()->last();
+                    $structure = ($this->findOrCreateEntity(Structure::class, $propertyAccessor, 'name', $value, false))
+                        ->setIsFestivalOrganizer(false)
+                        ->setIsCompanyProgrammedInFestival(false)
+                        ->setIsWorkshopPartner(false)
+                        ->setIsReceivingFestivalProgram(false)
+                        ->setIsFestivalPartner(false);
+
+                    $this->entityManager->persist($structure);
+
+                    $contactDetail->setStructure($structure);
+                    break;
+
+                case str_starts_with($colHeader, 'Profil') && $value !== null:
+                    $profileType = $this->findOrCreateEntity(ProfileType::class, $propertyAccessor, 'name', $value);
+                    $contact->addProfileType($profileType);
+                    break;
+
+                case str_starts_with($colHeader, 'Discipline') && $value !== null:
+                    $discipline = $this->findOrCreateEntity(Discipline::class, $propertyAccessor, 'name', $value);
+                    $contact->addDiscipline($discipline);
+                    break;
+
+                case str_starts_with($colHeader, 'Participant.e formation') && $value !== null:
+                    $formationParticipantType = $this->findOrCreateEntity(FormationParticipantType::class, $propertyAccessor, 'name', $value);
+                    $contact->addFormationParticipantType($formationParticipantType);
+                    break;
+
+                case str_starts_with($colHeader, 'Envoi newsletter') && $value !== null:
+                    $newsletterType = $this->findOrCreateEntity(NewsletterType::class, $propertyAccessor, 'name', $value);
+                    $contact->addNewsletterType($newsletterType);
+                    break;
+
+                default :
+                    if($value !== null) dump('Value not assignable. Field : ' . $colHeader . '. Value : ' . $value);
+            }
+        };
+    } 
+
+    private function findOrCreateEntity(string $entityFqcn, PropertyAccessor $propertyAccessor, string $field, string|int|bool $value, bool $persistAndFlush = true) : object
+    {
+        $entity = $this->entityManager->getRepository($entityFqcn)->findOneBy([$field => $value]);
+
+        if($entity === null) {
+            $entity = new $entityFqcn();
+            $propertyAccessor->setValue($entity, $field, $value);
+
+            dump('New entity (' . $entityFqcn . ') instantiated with value ' . $value);
+
+            if($persistAndFlush) {
+                $this->entityManager->persist($entity);
+            }
+        }
+
+        return $entity;
     }
 }
