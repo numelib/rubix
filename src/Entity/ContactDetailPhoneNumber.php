@@ -19,7 +19,7 @@ class ContactDetailPhoneNumber
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $phone_number = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(options: ['default' => 33])]
     private ?int $code = 33;
 
     public function __toString()
