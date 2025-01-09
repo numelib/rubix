@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ContactRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use libphonenumber\PhoneNumber;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Intl\Countries;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -45,8 +46,8 @@ class Contact
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $personnal_email = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $personnal_phone_number = null;
+    #[ORM\Column(type: 'phone_number', nullable: true)]
+    private ?PhoneNumber $personnal_phone_number = null;
 
     #[ORM\Column(length: 500, type: "text", nullable: true)]
     private ?string $communication_notes = null;
@@ -272,12 +273,12 @@ class Contact
         return $this;
     }
 
-    public function getPersonnalPhoneNumber(): ?string
+    public function getPersonnalPhoneNumber(): ?PhoneNumber
     {
         return $this->personnal_phone_number;
     }
 
-    public function setPersonnalPhoneNumber(?string $personnal_phone_number): static
+    public function setPersonnalPhoneNumber(?PhoneNumber $personnal_phone_number): static
     {
         $this->personnal_phone_number = $personnal_phone_number;
 

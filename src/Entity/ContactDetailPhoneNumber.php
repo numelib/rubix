@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ContactDetailPhoneNumberRepository;
 use Doctrine\ORM\Mapping as ORM;
+use libphonenumber\PhoneNumber;
 
 #[ORM\Entity(repositoryClass: ContactDetailPhoneNumberRepository::class)]
 class ContactDetailPhoneNumber
@@ -16,15 +17,12 @@ class ContactDetailPhoneNumber
     #[ORM\ManyToOne(inversedBy: 'contactDetailPhoneNumbers')]
     private ?ContactDetail $contact_detail = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $phone_number = null;
-
-    #[ORM\Column(options: ['default' => 33])]
-    private ?int $code = 33;
+    #[ORM\Column(type: 'phone_number', nullable: true)]
+    private ?PhoneNumber $phone_number = null;
 
     public function __toString()
     {
-        return '+' . $this->code . ' ' . $this->phone_number;
+        return $this->phone_number;
     }
 
     public function getId(): ?int
@@ -44,26 +42,14 @@ class ContactDetailPhoneNumber
         return $this;
     }
 
-    public function getPhoneNumber(): ?string
+    public function getPhoneNumber(): ?PhoneNumber
     {
         return $this->phone_number;
     }
 
-    public function setPhoneNumber(?string $phone_number): static
+    public function setPhoneNumber(?PhoneNumber $phone_number): static
     {
         $this->phone_number = $phone_number;
-
-        return $this;
-    }
-
-    public function getCode(): int
-    {
-        return $this->code ?? 33;
-    }
-
-    public function setCode(?int $code): static
-    {
-        $this->code = $code ?? 33;
 
         return $this;
     }

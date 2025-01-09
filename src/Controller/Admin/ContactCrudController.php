@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use App\Controller\Admin\Filter\ContactStructureFilter;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -49,7 +50,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use App\Controller\Admin\Filter\HasStructureFilter;
 use App\Controller\Admin\Filter\HasStructureFunctionFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -262,6 +262,8 @@ class ContactCrudController extends AbstractCrudController
             EmailField::new('personnal_email', $this->translator->trans('personnal_email'))
                 ->hideOnIndex(),
             TelephoneField::new('personnal_phone_number', $this->translator->trans('personnal_phone_number'))
+                ->setFormType(PhoneNumberType::class)
+                ->setFormTypeOption('default_region', 'FR')
                 ->hideOnIndex(),
             TextEditorField::new('personnal_notes', $this->translator->trans('personnal_notes'))
                 ->onlyOnForms(),

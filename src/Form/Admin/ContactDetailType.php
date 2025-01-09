@@ -47,7 +47,7 @@ class ContactDetailType extends AbstractType
                 'required' => false,
                 'attr' => ['required' => false],
                 'placeholder' => 'Aucun(e)'
-            ])                
+            ])
             ->add('contactDetailPhoneNumbers', CollectionType::class, [
                 'entry_type' => ContactDetailPhoneNumberType::class,
                 'entry_options' => ['label' => false],

@@ -12,8 +12,11 @@ use App\Entity\Parc;
 use App\Entity\ProfileType;
 use App\Entity\Structure;
 use App\Entity\StructureType;
+use App\Entity\StructurePhoneNumber;
 use App\Entity\StructureTypeSpecialization;
+use App\Service\ExcelValueConverter;
 use Doctrine\ORM\EntityManagerInterface;
+use libphonenumber\PhoneNumber;
 use Doctrine\ORM\Mapping\Entity;
 use Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -33,18 +36,18 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Throwable;
+use libphonenumber\PhoneNumberUtil;
 
 // the name of the command is what users type after "php bin/console"
 #[AsCommand(name: 'app:excel-import')]
 class ExcelImportCommand extends Command
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly PhoneNumberUtil $phoneNumberUtil,
+        private readonly ExcelValueConverter $excelValueConverter
+    ) {
         parent::__construct('app:excel-import');
-
-        $this->entityManager = $entityManager;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -64,6 +67,7 @@ class ExcelImportCommand extends Command
             'structure_newsletter_type',
             'structure_parc',
             'structure_structure_type_specialization',
+            'structure_phone_number',
         ];
 
         $truncateStatements = array_map(fn($tableName) => 'TRUNCATE ' . $tableName . ';', $truncateTables);
@@ -100,13 +104,24 @@ class ExcelImportCommand extends Command
             throw new Exception('Class : ' . $entityFqcn . ' does not exists');
         }
 
+        $unassignedValues = [];
         for ($row = $startRow; $row <= $endRow; ++$row) {
             $entity = new $entityFqcn();
             for ($col = $startCol; $col <= $endCol; ++$col) {
-                $callback($worksheet, $col, $row, $entity);
+                $unassignedValue = $callback($worksheet, $col, $row, $entity);
+
+                if(null !== $unassignedValue) $unassignedValues[] = $unassignedValue;
             }
+
             $this->entityManager->persist($entity);
             $this->entityManager->flush();
+        }
+
+        // DEBUG
+        echo 'Unassigned values : ' . PHP_EOL;
+        for($i = 0; $i < count($unassignedValues); $i++)
+        {
+            echo '[champ : ' . $unassignedValues[$i][0] . ', valeur : ' . $unassignedValues[$i][1] . ']' . PHP_EOL;
         }
     }
 
@@ -122,7 +137,7 @@ class ExcelImportCommand extends Command
         return [$column, (int) $matches[2]];
     }
 
-    private function convertCellValueTo(?string $value, ?string $castType) : mixed
+    private function convertCellValueTo(?string $value, ?string $castType) : string|bool|null
     {       
         if($castType === 'bool') {
             return match($value) {
@@ -171,7 +186,7 @@ class ExcelImportCommand extends Command
         $propertyAccessor = PropertyAccess::createPropertyAccessor();
         $structureReflection = new ReflectionClass(Structure::class);
 
-        return function(Worksheet $worksheet, int $col, int $row, Structure $structure) use ($propertyAccessor, $structureReflection) {
+        return function(Worksheet $worksheet, int $col, int $row, Structure $structure) use ($propertyAccessor, $structureReflection) : ?array {
             $colHeader = trim($worksheet->getCell([$col, 2])->getValue());
             $value = trim($worksheet->getCell([$col, $row])->getValue());
             $value = $this->convertCellValueTo($value, 'string');
@@ -202,19 +217,21 @@ class ExcelImportCommand extends Command
             if($property !== null && ($type = $this->getMainTypeOfProperty($property)) !== null && $propertyAccessor->isWritable($structure, $property->getName())) {
                 $value = $this->convertCellValueTo($value, $type);
 
-                // Cas particulier pour les codes postaux amériacians qui ne sont pas composés uniquement de chiffres
-                if($type === 'int' && gettype($value) === 'string') {
-                    dump($colHeader, $value);
-                    return;
-                }
-
                 if($value !== null) {
                     $propertyAccessor->setValue($structure, $property->getName(), $value);
-                    return;
+                    return null;
                 }
             }
 
             switch(true) {
+                case $propertyName === 'phone_number' && $value !== null:
+                    $numbers = $this->excelValueConverter->toPhoneNumbers($value);
+                    for($i = 0; $i < count($numbers); $i++)
+                    {
+                        $phoneNumber = $this->findOrCreateEntity(StructurePhoneNumber::class, $propertyAccessor, 'value', $numbers[$i]);
+                        $structure->addPhoneNumber($phoneNumber);
+                    }
+                    break;
                 case $colHeader === 'Type' && $value !== null: 
                     $type = $this->findOrCreateEntity(StructureType::class, $propertyAccessor, 'name', $value);
                     $structure->setStructureType($type);
@@ -241,8 +258,12 @@ class ExcelImportCommand extends Command
                     break;
 
                 default :
-                    if($value !== null) dump('Value not assignable. Field : ' . $colHeader . '. Value : ' . $value);
+                    if($value !== null) {
+                        return [$colHeader, $value];
+                    }
             }
+
+            return null;
         };
     }
 
@@ -251,7 +272,7 @@ class ExcelImportCommand extends Command
         $propertyAccessor = PropertyAccess::createPropertyAccessor();
         $contactReflection = new ReflectionClass(Contact::class);
 
-        return function(Worksheet $worksheet, int $col, int $row, Contact $contact) use ($propertyAccessor, $contactReflection) {
+        return function(Worksheet $worksheet, int $col, int $row, Contact $contact) use ($propertyAccessor, $contactReflection) : ?array {
             $colHeader = trim($worksheet->getCell([$col, 2])->getValue());
             $value = trim($worksheet->getCell([$col, $row])->getValue());
             $value = $this->convertCellValueTo($value, 'string');
@@ -287,11 +308,19 @@ class ExcelImportCommand extends Command
 
                 if($value !== null) {
                     $propertyAccessor->setValue($contact, $property->getName(), $value);
-                    return;
+                    return null;
                 }
             }
 
             switch(true) {
+                case str_starts_with($colHeader, 'Numéro de téléphone personnel') && $value !== null : 
+                    $numbers = $this->excelValueConverter->toPhoneNumbers($value);
+                    if(count($numbers) > 1) throw new Exception('Contact should not have mutliple phone numbers : ' . implode(', ', $numbers));
+                    foreach($numbers as $number)
+                    {
+                        $contact->setPersonnalPhoneNumber($number);
+                    }
+                    break;
                 case str_starts_with($colHeader, 'Email') : 
                     $contactDetail = (new ContactDetail())->setEmail($value);
                     $contact->addContactDetail($contactDetail);
@@ -301,8 +330,12 @@ class ExcelImportCommand extends Command
                 case str_starts_with($colHeader, 'Tél mobile') && $value !== null:
                     /** @var \App\Entity\ContactDetail */
                     $contactDetail = $contact->getContactDetails()->last();
-                    $phoneNumber = (new ContactDetailPhoneNumber())->setPhoneNumber($value);
-                    $contactDetail->addContactDetailPhoneNumber($phoneNumber);
+                    $numbers = $this->excelValueConverter->toPhoneNumbers($value);
+                    foreach($numbers as $number)
+                    {
+                        $phoneNumber = (new ContactDetailPhoneNumber())->setPhoneNumber($number);
+                        $contactDetail->addContactDetailPhoneNumber($phoneNumber);
+                    }
                     break;
 
                 case str_starts_with($colHeader, 'Fonction') && $value !== null: 
@@ -347,12 +380,16 @@ class ExcelImportCommand extends Command
                     break;
 
                 default :
-                    if($value !== null) dump('Value not assignable. Field : ' . $colHeader . '. Value : ' . $value);
+                    if($value !== null) {
+                        return [$colHeader, $value];
+                    };
             }
+
+            return null;
         };
     } 
 
-    private function findOrCreateEntity(string $entityFqcn, PropertyAccessor $propertyAccessor, string $field, string|int|bool $value, bool $persistAndFlush = true) : object
+    private function findOrCreateEntity(string $entityFqcn, PropertyAccessor $propertyAccessor, string $field, mixed $value, bool $persistInDb = true) : object
     {
         $entity = $this->entityManager->getRepository($entityFqcn)->findOneBy([$field => $value]);
 
@@ -362,7 +399,7 @@ class ExcelImportCommand extends Command
 
             dump('New entity (' . $entityFqcn . ') instantiated with value ' . $value);
 
-            if($persistAndFlush) {
+            if($persistInDb) {
                 $this->entityManager->persist($entity);
             }
         }

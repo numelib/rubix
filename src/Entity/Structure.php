@@ -3,13 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\StructureRepository;
-use App\Service\ArrayHelper;
+use libphonenumber\PhoneNumber;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Intl\Countries;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: StructureRepository::class)]
 class Structure
@@ -24,9 +23,6 @@ class Structure
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $email = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $phone_number = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $website = null;
@@ -53,7 +49,7 @@ class Structure
     private ?string $address_adition = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $address_code = null;
+    private ?string $address_code = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address_country = null;
@@ -124,6 +120,12 @@ class Structure
     #[ORM\OneToMany(targetEntity: Contact::class, mappedBy: 'structure_sending_festival_program')]
     private Collection $contacts_receiving_festival_program;
 
+    /**
+     * @var Collection<int, StructurePhoneNumber>
+     */
+    #[ORM\OneToMany(targetEntity: StructurePhoneNumber::class, mappedBy: 'structure', orphanRemoval: true)]
+    private Collection $phone_numbers;
+
     public function __construct()
     {
         $this->contact_details = new ArrayCollection();
@@ -132,6 +134,7 @@ class Structure
         $this->newsletter_types = new ArrayCollection();
         $this->disciplines = new ArrayCollection();
         $this->contacts_receiving_festival_program = new ArrayCollection();
+        $this->phone_numbers = new ArrayCollection();
     }
 
     public function __toString()
@@ -164,18 +167,6 @@ class Structure
     public function setEmail(?string $email): static
     {
         $this->email = $email;
-
-        return $this;
-    }
-
-    public function getPhoneNumber(): ?string
-    {
-        return $this->phone_number;
-    }
-
-    public function setPhoneNumber(?string $phone_number): static
-    {
-        $this->phone_number = $phone_number;
 
         return $this;
     }
@@ -276,12 +267,12 @@ class Structure
         return $this;
     }
 
-    public function getAddressCode(): ?int
+    public function getAddressCode(): ?string
     {
         return $this->address_code;
     }
 
-    public function setAddressCode(?int $address_code): static
+    public function setAddressCode(?string $address_code): static
     {
         $this->address_code = $address_code;
 
@@ -616,6 +607,36 @@ class Structure
             // set the owning side to null (unless already changed)
             if ($contactsReceivingFestivalProgram->getStructureSendingFestivalProgram() === $this) {
                 $contactsReceivingFestivalProgram->setStructureSendingFestivalProgram(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StructurePhoneNumber>
+     */
+    public function getPhoneNumbers(): Collection
+    {
+        return $this->phone_numbers;
+    }
+
+    public function addPhoneNumber(StructurePhoneNumber $phoneNumber): static
+    {
+        if (!$this->phone_numbers->contains($phoneNumber)) {
+            $this->phone_numbers->add($phoneNumber);
+            $phoneNumber->setStructure($this);
+        }
+
+        return $this;
+    }
+
+    public function removePhoneNumber(StructurePhoneNumber $phoneNumber): static
+    {
+        if ($this->phone_numbers->removeElement($phoneNumber)) {
+            // set the owning side to null (unless already changed)
+            if ($phoneNumber->getStructure() === $this) {
+                $phoneNumber->setStructure(null);
             }
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use App\Entity\Contact;
 use App\Entity\Structure;
 use App\Entity\StructureTypeSpecialization;
@@ -224,7 +225,8 @@ class StructureCrudController extends AbstractCrudController
             FormField::addColumn(6),
             FormField::addFieldset('Coordonnées'),
             EmailField::new('email', $this->translator->trans('email')),
-            TelephoneField::new('phone_number', $this->translator->trans('phone_number')),
+            TelephoneField::new('phone_number', $this->translator->trans('phone_number'))
+                ->setFormType(PhoneNumberType::class),
             FormField::addFieldset('Adresse')
                 ->hideOnIndex(),
             TextField::new('address_street', $this->translator->trans('address_street'))

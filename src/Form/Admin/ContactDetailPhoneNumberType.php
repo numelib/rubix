@@ -3,7 +3,7 @@
 namespace App\Form\Admin;
 
 use App\Entity\ContactDetailPhoneNumber;
-use App\Transformer\DefaultValueTransformer;
+use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -24,18 +24,18 @@ class ContactDetailPhoneNumberType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('phone_number', TelType::class, ['label' => $this->translator->trans('phone_number')])
-            ->add('code', NumberType::class, [
-                'html5' => true,
-                'required' => false,
-                'empty_data' => 33,
-                'label' => $this->translator->trans('code')
-            ])
-            ->get('code')
-            ->addModelTransformer(new CallbackTransformer(
-                fn($code) : int => ($code === null) ? 33 : $code,
-                fn($code) : int => ($code === null) ? 33 : $code
-            ))
+            ->add('phone_number', PhoneNumberType::class, ['label' => $this->translator->trans('phone_number')])
+            // ->add('code', NumberType::class, [
+            //     'html5' => true,
+            //     'required' => false,
+            //     'empty_data' => 33,
+            //     'label' => $this->translator->trans('code')
+            // ])
+            // ->get('code')
+            // ->addModelTransformer(new CallbackTransformer(
+            //     fn($code) : int => ($code === null) ? 33 : $code,
+            //     fn($code) : int => ($code === null) ? 33 : $code
+            // ))
         ;
     }
 
