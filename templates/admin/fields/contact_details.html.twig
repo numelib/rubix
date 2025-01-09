@@ -66,7 +66,7 @@
                     </div>
                     <div class="field-value">
                         {% for phoneNumber in contactDetail.contactDetailPhoneNumbers %}
-                            <span class="d-block">{{ phoneNumber.phoneNumber|phone_number_format }}</span>
+                            <span class="d-block">{{ phoneNumber.value|phone_number_format }}</span>
                         {% endfor %}
                     </div>
                 </div>

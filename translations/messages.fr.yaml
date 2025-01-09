@@ -14,6 +14,7 @@ professional_notes : Notes
 personnal_email : Email perso
 professional_email : Email pro
 personnal_phone_number : Téléphone perso
+structure_phone_number: Numéro(s) de téléphone de la Structure
 Address: Adresse
 address_street : Rue
 address_adition : Complément
@@ -34,6 +35,8 @@ structure_type_specializations : Sous-type de structure
 name : Nom
 email : Email générique
 phone_number : Numéro de téléphone
+phone_numbers : Numéros de téléphone
+country: Pays
 is_festival_organizer : Organisation d'un festival
 is_company_programmed_in_festival : Compagnie programmée dans le festival
 is_workshop_partner : Structure partenaire ateliers

@@ -123,7 +123,7 @@ class Structure
     /**
      * @var Collection<int, StructurePhoneNumber>
      */
-    #[ORM\OneToMany(targetEntity: StructurePhoneNumber::class, mappedBy: 'structure', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: StructurePhoneNumber::class, mappedBy: 'structure', orphanRemoval: true, cascade: ['persist'])]
     private Collection $phone_numbers;
 
     public function __construct()

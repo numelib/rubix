@@ -9,6 +9,7 @@ use libphonenumber\PhoneNumber;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Intl\Countries;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -46,6 +47,7 @@ class Contact
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $personnal_email = null;
 
+    #[AssertPhoneNumber()]
     #[ORM\Column(type: 'phone_number', nullable: true)]
     private ?PhoneNumber $personnal_phone_number = null;
 

@@ -18,13 +18,23 @@ class ExcelValueConverter
         $result = [];
 
         // Remplacement caractères encodés bizarrement dans Export Excel (pourquoi ? Aucune idée)
+        $toReplace = [
+            ".",
+            " ",
+            "‭",
+            "‬",
+            "\u{202C}",
+            "\u{202D}",
+            mb_chr(0x202C, 'UTF-8'),
+            mb_chr(0x202D, 'UTF-8')
+        ];
+
         $value = str_replace("\u{202F}", ' ', $value);
-        $value = str_replace("‭", '', $value);
-        $value = str_replace("‬", '', $value);
-        $value = str_replace(".", '', $value); 
-        $value = str_replace(" ", '', $value); 
-        
-        $value = str_replace(' ', '', $value);
+        $value = str_replace($toReplace, '', $value);
+        $value = preg_replace('/\x{202D}/u', '', $value);
+        $value = preg_replace('/[\p{C}]/u', '', $value);
+        $value = preg_replace('/[^\p{L}\p{N}\+\/]/u', '', $value);
+
         $numbers = explode('/', $value);
         for($i = 0; $i < count($numbers); $i++)
         {

@@ -6,6 +6,7 @@ use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use App\Entity\Contact;
 use App\Entity\Structure;
 use App\Entity\StructureTypeSpecialization;
+use App\Form\Admin\StructurePhoneNumberType;
 use App\Repository\ContactRepository;
 use App\Service\EntitySpreadsheetGenerator;
 use Doctrine\Common\Collections\Criteria;
@@ -26,6 +27,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
@@ -124,7 +126,7 @@ class StructureCrudController extends AbstractCrudController
         $fields =  [
             'name',
             'email',
-            'phone_number',
+            'phone_numbers',
             'is_festival_organizer',
             'is_company_programmed_in_festival',
             'is_workshop_partner',
@@ -225,8 +227,12 @@ class StructureCrudController extends AbstractCrudController
             FormField::addColumn(6),
             FormField::addFieldset('Coordonnées'),
             EmailField::new('email', $this->translator->trans('email')),
-            TelephoneField::new('phone_number', $this->translator->trans('phone_number'))
-                ->setFormType(PhoneNumberType::class),
+            CollectionField::new('phone_numbers', $this->translator->trans('structure_phone_number'))
+                ->setEntryType(StructurePhoneNumberType::class)
+                ->allowDelete(true)
+                ->setEntryIsComplex()
+                ->renderExpanded()
+                ->hideOnIndex(),
             FormField::addFieldset('Adresse')
                 ->hideOnIndex(),
             TextField::new('address_street', $this->translator->trans('address_street'))

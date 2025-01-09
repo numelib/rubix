@@ -11,6 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\PersistentCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use Exception;
+use libphonenumber\PhoneNumber;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -169,6 +171,17 @@ class EntitySpreadsheetGenerator
                             $cell['value'] = $this->translator->trans($cell['value']);
                         }
 
+                        if($field === 'personnal_phone_number' && $cell['value'] instanceof PhoneNumber) {
+                            $cell['value'] = '+' . $cell['value']->getCountryCode() . $cell['value']->getNationalNumber();
+                            
+                            $spreadsheet->getActiveSheet()->setCellValueExplicit($cell['position'], $cell['value'], DataType::TYPE_STRING);
+                            $spreadsheet->getActiveSheet()->getColumnDimension($cell['column'])->setAutoSize(true);
+
+                            $cell['column']++;
+
+                            continue;
+                        }
+
                         if($field === 'is_receiving_festival_program') {
 
                             if($cell['value'] === true) {
@@ -205,7 +218,7 @@ class EntitySpreadsheetGenerator
                             if($field === 'structure') {
                                 $contactDetail = $contactDetails->toArray()[$i];
     
-                                $cell['value'] = $contactDetail->getStructure()->__toString();
+                                $cell['value'] = $contactDetail->getStructure()?->__toString();
                             }
     
                             if($field === 'structure_function') {
@@ -218,6 +231,13 @@ class EntitySpreadsheetGenerator
     
                             if($field === 'professionnal_phone_numbers') {
                                 $cell['value'] = implode(', ', $contactDetail->getContactDetailPhoneNumbers()->toArray());
+
+                                $spreadsheet->getActiveSheet()->setCellValueExplicit($cell['position'], $cell['value'], DataType::TYPE_STRING);
+                                $spreadsheet->getActiveSheet()->getColumnDimension($cell['column'])->setAutoSize(true);
+
+                                $cell['column']++;
+
+                                continue;
                             }
                         }
                     }

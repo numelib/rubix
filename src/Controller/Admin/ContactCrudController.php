@@ -263,7 +263,16 @@ class ContactCrudController extends AbstractCrudController
                 ->hideOnIndex(),
             TelephoneField::new('personnal_phone_number', $this->translator->trans('personnal_phone_number'))
                 ->setFormType(PhoneNumberType::class)
-                ->setFormTypeOption('default_region', 'FR')
+                ->setFormTypeOptions([
+                    'widget' => PhoneNumberType::WIDGET_COUNTRY_CHOICE,
+                    'preferred_country_choices' => ['FR', 'US'],
+                    'number_options' => [
+                        'label' => $this->translator->trans('phone_number')
+                    ],
+                    'country_options' => [
+                        'label' => $this->translator->trans('country'),
+                    ],
+                ])
                 ->hideOnIndex(),
             TextEditorField::new('personnal_notes', $this->translator->trans('personnal_notes'))
                 ->onlyOnForms(),

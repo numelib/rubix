@@ -117,7 +117,7 @@ class ConvertPhoneNumber extends Command
     {
         $sql = "
             UPDATE `contact` SET `personnal_phone_number` = CASE
-                WHEN `personnal_phone_number` NOT LIKE '+%' THEN REPLACE(REPLACE(CONCAT('+33', `personnal_phone_number`), ' ', ''), '.', '')
+                WHEN `personnal_phone_number` NOT LIKE '+%' THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT('+33', `personnal_phone_number`), ' ', ''), '.', ''), ' ', ''), BINARY '‭', ''), BINARY '‬', '')
                 ELSE REPLACE(`personnal_phone_number`, ' ', '')
             END
             WHERE `personnal_phone_number` IS NOT NULL;
@@ -134,7 +134,7 @@ class ConvertPhoneNumber extends Command
     {
         $sql = "
             UPDATE `contact_detail_phone_number` SET `phone_number` = CASE
-                WHEN `code` IS NOT NULL THEN REPLACE(REPLACE(CONCAT('+', `code`, `phone_number`), ' ', ''), '.', '')
+                WHEN `code` IS NOT NULL THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT('+', `code`, `phone_number`), ' ', ''), '.', ''), ' ', ''), BINARY '‭', ''), BINARY '‬', '')
                 ELSE REPLACE(CONCAT('+', 33, `phone_number`), ' ', '')
             END
             WHERE `phone_number` not like '+%';
@@ -151,7 +151,7 @@ class ConvertPhoneNumber extends Command
     {
         $sql = "
             UPDATE `structure` SET `phone_number` = CASE
-                WHEN `phone_number` NOT LIKE '+%' THEN REPLACE(REPLACE(CONCAT('+33', `phone_number`), ' ', ''), '.', '')
+                WHEN `phone_number` NOT LIKE '+%' THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT('+33', `phone_number`), ' ', ''), '.', ''), ' ', ''), BINARY '‭', ''), BINARY '‬', '')
                 ELSE REPLACE(`phone_number`, ' ', '')
             END
             WHERE `phone_number` IS NOT NULL;
