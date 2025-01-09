@@ -2,8 +2,6 @@
 
 namespace App\Command;
 
-use App\Entity\Structure;
-use App\Entity\StructurePhoneNumber;
 use App\Service\ExcelValueConverter;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,8 +10,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\PropertyAccess\PropertyAccess;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 // the name of the command is what users type after "php bin/console"
 #[AsCommand(name: 'app:convert-phone-number')]
@@ -30,49 +26,28 @@ class ConvertPhoneNumber extends Command
     {
         $connection = $this->entityManager->getConnection();
 
-        $this->updateStructurePhoneNumbers($connection, $input, $output);
+        // L'ordre d'execution est important !
+
+        $this->weirdPhoneNumbersToNull($connection, 'structure', 'phone_number');
+        $this->weirdPhoneNumbersToNull($connection, 'contact', 'personnal_phone_number');
+        $this->weirdPhoneNumbersToNull($connection, 'contact_detail_phone_number', 'phone_number');
 
         $this->updateContactPersonnalPhoneFormat($connection);
+        $this->updateContactDetailPhoneNumberFormat($connection);
+        $this->updateStructurePhoneNumberFormat($connection);
 
-        // 2 - ContactdetailPhoneNumber (phone_number)
-        // Changer le nom du champ en "value"
-        // Modifier le format des numéros de téléphone existants pour qu'il respectent la norme E.164
+        $sql = 'ALTER TABLE contact_detail_phone_number CHANGE `phone_number` `value` VARCHAR(255);';
+        $connection->executeQuery($sql);
 
-       
-
-        
-
-        // $this->entityManager->flush();
-
-        // Modifier le format des numéros de téléphone existants pour qu'il respectent la norme E.164
-
-        // $sql = "
-        //     UPDATE `contact_detail_phone_number` SET `phone_number` = CASE
-        //         WHEN `code` IS NOT NULL THEN REPLACE(CONCAT('+', `code`, `phone_number`), ' ', '')
-        //         ELSE REPLACE(CONCAT('+', 33, `phone_number`), ' ', '')
-        //     END
-        //     WHERE `phone_number` not like '+%';
-        // ";
-
-        // $sql .= "
-        //     UPDATE `contact` SET `personnal_phone_number` = CASE
-        //         WHEN `personnal_phone_number` NOT LIKE '+%' THEN REPLACE(CONCAT('+33', `personnal_phone_number`), ' ', '')
-        //         ELSE REPLACE(`personnal_phone_number`, ' ', '')
-        //     END
-        //     WHERE `personnal_phone_number` IS NOT NULL;
-        // ";
-
-        // $sql .= "
-        //     UPDATE `structure` SET `phone_number` = CASE
-        //         WHEN `phone_number` NOT LIKE '+%' THEN REPLACE(CONCAT('+33', `phone_number`), ' ', '')
-        //         ELSE REPLACE(`phone_number`, ' ', '')
-        //     END
-        //     WHERE `phone_number` IS NOT NULL;
-        // ";
-
-        // $connection->executeQuery($sql);
+        $this->updateStructurePhoneNumbers($connection, $input, $output);
 
         return Command::SUCCESS;
+    }
+
+    private function weirdPhoneNumbersToNull(Connection $connection, string $table, string $field) : void
+    {
+        $sql = 'UPDATE ' . $table . ' SET ' .  $field . ' = NULL WHERE ' . $field . ' = "" OR LENGTH(' . $field . ') < 2';
+        $connection->executeQuery($sql);
     }
 
     /**
@@ -142,10 +117,44 @@ class ConvertPhoneNumber extends Command
     {
         $sql = "
             UPDATE `contact` SET `personnal_phone_number` = CASE
-                WHEN `personnal_phone_number` NOT LIKE '+%' THEN REPLACE(CONCAT('+33', `personnal_phone_number`), ' ', '')
+                WHEN `personnal_phone_number` NOT LIKE '+%' THEN REPLACE(REPLACE(CONCAT('+33', `personnal_phone_number`), ' ', ''), '.', '')
                 ELSE REPLACE(`personnal_phone_number`, ' ', '')
             END
             WHERE `personnal_phone_number` IS NOT NULL;
+        ";
+
+        $connection->executeQuery($sql);
+    }
+
+    /**
+     * Modifie le format des numéros de téléphone des coordonnées du contact existants (contact_detail_phone_number)
+     * pour qu'ils respectent la norme E.164
+     */
+    private function updateContactDetailPhoneNumberFormat(Connection $connection) : void
+    {
+        $sql = "
+            UPDATE `contact_detail_phone_number` SET `phone_number` = CASE
+                WHEN `code` IS NOT NULL THEN REPLACE(REPLACE(CONCAT('+', `code`, `phone_number`), ' ', ''), '.', '')
+                ELSE REPLACE(CONCAT('+', 33, `phone_number`), ' ', '')
+            END
+            WHERE `phone_number` not like '+%';
+        ";
+
+        $connection->executeQuery($sql);
+    }
+    
+     /**
+     * Modifie le format des numéros de téléphone des coordonnées des structures existantes (contact_detail_phone_number)
+     * pour qu'ils respectent la norme E.164
+     */
+    private function updateStructurePhoneNumberFormat(Connection $connection) : void
+    {
+        $sql = "
+            UPDATE `structure` SET `phone_number` = CASE
+                WHEN `phone_number` NOT LIKE '+%' THEN REPLACE(REPLACE(CONCAT('+33', `phone_number`), ' ', ''), '.', '')
+                ELSE REPLACE(`phone_number`, ' ', '')
+            END
+            WHERE `phone_number` IS NOT NULL;
         ";
 
         $connection->executeQuery($sql);

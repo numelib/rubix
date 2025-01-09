@@ -18,11 +18,11 @@ class ContactDetailPhoneNumber
     private ?ContactDetail $contact_detail = null;
 
     #[ORM\Column(type: 'phone_number', nullable: true)]
-    private ?PhoneNumber $phone_number = null;
+    private ?PhoneNumber $value = null;
 
     public function __toString()
     {
-        return $this->phone_number;
+        return $this->value;
     }
 
     public function getId(): ?int
@@ -42,14 +42,14 @@ class ContactDetailPhoneNumber
         return $this;
     }
 
-    public function getPhoneNumber(): ?PhoneNumber
+    public function getValue(): ?PhoneNumber
     {
-        return $this->phone_number;
+        return $this->value;
     }
 
-    public function setPhoneNumber(?PhoneNumber $phone_number): static
+    public function setValue(?PhoneNumber $value): static
     {
-        $this->phone_number = $phone_number;
+        $this->value = $value;
 
         return $this;
     }

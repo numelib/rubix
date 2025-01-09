@@ -21,7 +21,9 @@ class ExcelValueConverter
         $value = str_replace("\u{202F}", ' ', $value);
         $value = str_replace("‭", '', $value);
         $value = str_replace("‬", '', $value);
-
+        $value = str_replace(".", '', $value); 
+        $value = str_replace(" ", '', $value); 
+        
         $value = str_replace(' ', '', $value);
         $numbers = explode('/', $value);
         for($i = 0; $i < count($numbers); $i++)
