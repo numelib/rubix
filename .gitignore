@@ -1,6 +1,6 @@
 ###> app ###
-/src/Command/ExcelImportCommand.php
 /public/spreadsheets/
+/src/Command/
 ###< app ###
 
 ###> symfony/framework-bundle ###
