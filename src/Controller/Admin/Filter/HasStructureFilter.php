@@ -22,6 +22,13 @@ class HasStructureFilter implements FilterInterface
             ->setProperty($propertyName)
             ->setLabel($label)
             ->setFormType(EntityFilterType::class)
+            ->setFormTypeOption('value_type_options.choice_label', function(?Structure $structure) {
+                $label = $structure?->__toString();
+                if($structure?->getAddressCity() !== null) {
+                    $label .= ' - ' . $structure->getAddressCity();
+                }
+                return $label;
+            })
             ->setFormTypeOption('value_type_options.class', Structure::class)
             ->setFormTypeOption('value_type_options.multiple', true)
             ;
