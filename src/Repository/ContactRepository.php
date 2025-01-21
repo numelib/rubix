@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Contact;
+use App\Entity\Structure;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -66,6 +67,35 @@ class ContactRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+
+        return $result;
+    }
+
+    public function findByStructure(Structure $structure) : array
+    {
+        $query = $this->createQueryBuilder('contact')
+            ->select('contact')
+            ->leftJoin('contact.contact_details', 'contact_details')
+            ->leftJoin('contact_details.structure', 'structure')
+            ->where('structure = :structure')
+            ->setParameter('structure', $structure)
+            ->getQuery();
+
+        return $query->getResult();
+    }
+
+    public function findAllLeftJoined() : array
+    {
+        $queryBuilder = $this->createQueryBuilder('contact')
+            ->select('partial contact.{id, firstname, lastname} ', 'partial contact_details.{id, structure_function}', 'postProgram')
+            ->leftJoin('contact.contact_details', 'contact_details')
+            ->leftJoin('contact.postProgram', 'postProgram');
+
+        $query = $queryBuilder->getQuery();
+        
+        $query->setHint(\Doctrine\ORM\Query::HINT_FORCE_PARTIAL_LOAD, 1);
+
+        $result = $query->getResult();
 
         return $result;
     }

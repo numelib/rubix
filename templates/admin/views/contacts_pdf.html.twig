@@ -34,7 +34,7 @@
                     <p class="card__title">{{ contact.lastname|upper }} {{ contact.firstname }}</p>
                 </div>
                 <div class="card__body">
-                    <p>{{ contact.festivalProgramAddress(true) }}</p>
+                    <p>{{ contact.postProgram != null ? contact.postProgram.simpleAddress : 'Aucun(e)' }}</p>
                     <p>{{ structure.name }}</p>
                     <p>{{ structure.addressStreet == null ? 'Rue inconnue' : structure.addressStreet }}</p>
                     <p>

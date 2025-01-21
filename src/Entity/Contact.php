@@ -125,11 +125,8 @@ class Contact
     #[ORM\ManyToMany(targetEntity: NewsletterType::class, inversedBy: 'contacts')]
     private Collection $newsletter_types;
 
-    #[ORM\Column]
-    private ?bool $is_receiving_festival_program = null;
-
-    #[ORM\ManyToOne(inversedBy: 'contacts_receiving_festival_program')]
-    private ?Structure $structure_sending_festival_program = null;
+    #[ORM\OneToOne(targetEntity: PostProgram::class, mappedBy: 'contact', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private $postProgram = null;
 
     public function __construct()
     {
@@ -630,7 +627,7 @@ class Contact
         return new ArrayCollection($structuresFunctions);
     }
 
-    public function getStructures()  : ArrayCollection
+    public function getFormattedStructures()  : ArrayCollection
     {
         $structures = array_unique($this->getContactDetails()
             ->map(fn(ContactDetail $contactDetail) => $contactDetail->getStructure())
@@ -639,6 +636,20 @@ class Contact
 
         return new ArrayCollection($structures);
     }
+
+    public function getStructures()
+    {
+        $structures = [];
+        foreach($this->getContactDetails() as $cd)
+        {
+            if($cd->getStructure()){
+                $structures[] = $cd->getStructure();
+            }
+        }
+
+        return $structures;
+    }
+
 
     public function getNewsletterEmail(): ?string
     {
@@ -691,39 +702,27 @@ class Contact
         }
     }
 
-    public function getFestivalProgramAddress(bool $oneline = false): string
+    public function getPostProgram(): ?PostProgram
     {
-        if($this->isReceivingFestivalProgram()) return $this->getFormattedAddress($oneline);
-
-        return $this->getStructureSendingFestivalProgram()?->getFormattedAddress($oneline) ?? 'Aucune adresse d\'envoi du programme du festival';
+        return $this->postProgram;
     }
 
-    public function getIsReceivingFestivalProgram(): ?bool
+    public function setPostProgram(?PostProgram $postProgram): static
     {
-        return $this->is_receiving_festival_program;
-    }
+        // unset the owning side of the relation if necessary
+        if ($postProgram === null && $this->postProgram !== null) {
+            $this->postProgram->setContact(null);
+        }
 
-    public function setIsReceivingFestivalProgram(bool $is_receiving_festival_program): static
-    {
-        $this->is_receiving_festival_program = $is_receiving_festival_program;
+        // set the owning side of the relation if necessary
+        if ($postProgram !== null && $postProgram->getContact() !== $this) {
+            $postProgram->setContact($this);
+        }
+
+        $this->postProgram = $postProgram;
 
         return $this;
     }
 
-    public function isReceivingFestivalProgram(): ?bool
-    {
-        return $this->is_receiving_festival_program;
-    }
 
-    public function getStructureSendingFestivalProgram(): ?Structure
-    {
-        return $this->structure_sending_festival_program;
-    }
-
-    public function setStructureSendingFestivalProgram(?Structure $structure_sending_festival_program): static
-    {
-        $this->structure_sending_festival_program = $structure_sending_festival_program;
-
-        return $this;
-    }
 }

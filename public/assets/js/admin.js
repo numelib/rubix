@@ -63,88 +63,6 @@ $(document).ready(function () {
     const easyAdminPage = new EasyAdminPage(document.body);
     const formPages = [EasyAdminPage.names.new, EasyAdminPage.names.edit];
 
-    if(easyAdminPage.entity === 'Contact' && easyAdminPage.name === EasyAdminPage.names.edit) {
-        const CONTACT_ID = urlParams.get('entityId');
-        const FESTIVAL_PROGRAM_TOGGLE = document.querySelector('#Contact_is_receiving_festival_program');
-
-        const WARNING_PARAGRAPH = document.createElement('p');
-        WARNING_PARAGRAPH.classList.add('text-warning', 'my-0', 'd-none');
-        FESTIVAL_PROGRAM_TOGGLE.parentElement.insertAdjacentElement('afterend', WARNING_PARAGRAPH);
-
-        FESTIVAL_PROGRAM_TOGGLE.addEventListener('change', function() {
-            if(this.checked === false) {
-                WARNING_PARAGRAPH.classList.add('d-none');
-                return;
-            }
-
-            const fetchStructureSendingFestivalProgram = async function(contactId) {
-                const API_URL = window.location.origin + '/api/festival-program/contact?contactId=' + contactId;
-                const RESPONSE = await fetch(API_URL);
-                const DATA = await RESPONSE.json();
-
-                return DATA.structure;
-            };
-
-            fetchStructureSendingFestivalProgram(CONTACT_ID).then((structure) => {
-                if(structure !== null) {
-                    // Display a warning message
-                    const MESSAGE = 'ATTENTION : le contact recoit déjà le programme via la structure : ' + structure;
-                    WARNING_PARAGRAPH.textContent = MESSAGE;
-                    WARNING_PARAGRAPH.classList.remove('d-none');
-                }
-            })
-        })
-    }
-
-    if(easyAdminPage.entity === 'Structure' && formPages.includes(easyAdminPage.name)) {
-        const FESTIVAL_PROGRAM_TOGGLE = document.querySelector('#Structure_is_receiving_festival_program');
-        const CONTACT_SELECT = document.querySelector('#Structure_contacts_receiving_festival_program');
-
-        const WARNING_PARAGRAPH = document.createElement('p');
-        WARNING_PARAGRAPH.classList.add('text-warning', 'my-0', 'd-none');
-        CONTACT_SELECT.parentElement.insertAdjacentElement('afterend', WARNING_PARAGRAPH);
-
-        const fetchContactReceivingFestivalProgram = async function(contactId) {
-            const API_URL = window.location.origin + '/api/festival-program/structure?contactId=' + contactId;
-            const RESPONSE = await fetch(API_URL);
-            const DATA = await RESPONSE.json();
-
-            return DATA.contact;
-        };
-
-        FESTIVAL_PROGRAM_TOGGLE.addEventListener('change', function() {
-            if(this.checked !== true || CONTACT_SELECT.value === '') {
-                WARNING_PARAGRAPH.classList.add('d-none');
-                return;
-            }
-
-            const CONTACT_ID = CONTACT_SELECT.value;
-            fetchContactReceivingFestivalProgram(CONTACT_ID).then((contact) => {
-                if(contact !== null) {
-                    const MESSAGE = 'ATTENTION : le contact ' + contact + 'recoit déjà le programme';
-                    WARNING_PARAGRAPH.textContent = MESSAGE;
-                    WARNING_PARAGRAPH.classList.remove('d-none');
-                }
-            });
-        });
-
-        CONTACT_SELECT.addEventListener('change', function() {
-            if(FESTIVAL_PROGRAM_TOGGLE.checked !== true || this.value === '') {
-                WARNING_PARAGRAPH.classList.add('d-none');
-                return;
-            }
-
-            const CONTACT_ID = this.value;
-            fetchContactReceivingFestivalProgram(CONTACT_ID).then((contact) => {
-                if(contact !== null) {
-                    const MESSAGE = 'ATTENTION : le contact ' + contact + ' recoit déjà le programme';
-                    WARNING_PARAGRAPH.textContent = MESSAGE;
-                    WARNING_PARAGRAPH.classList.remove('d-none');
-                }
-            });
-        });
-    }
-
     if(easyAdminPage.entity === 'Contact' && formPages.includes(easyAdminPage.name)) {
 
         // MODIFICATION DES <select> DES COORDONNEES EN TOMSELECT
@@ -261,5 +179,16 @@ $(document).ready(function () {
             const TAB_ELEMENT = document.querySelector(`[href="#${TAB_NAME}"]`);
             if(TAB_ELEMENT !== null) bootstrap.Tab.getOrCreateInstance(TAB_ELEMENT).show();
         }
+    }
+
+    {
+        const IS_PROGRAM_SENT_TOGGLE = document.getElementById('Contact_postProgram_is_sent') ?? document.getElementById('Structure_postProgram_is_sent');
+        const POST_PROGRAM_FIELD = document.getElementById('Contact_postProgram_structure') ?? document.getElementById('Structure_postProgram_contact');
+
+        (IS_PROGRAM_SENT_TOGGLE.checked) ? POST_PROGRAM_FIELD.tomselect.enable() : POST_PROGRAM_FIELD.tomselect.disable();
+
+        IS_PROGRAM_SENT_TOGGLE.addEventListener('change', function() {
+            (this.checked) ? POST_PROGRAM_FIELD.tomselect.enable() : POST_PROGRAM_FIELD.tomselect.disable()
+        });
     }
 });

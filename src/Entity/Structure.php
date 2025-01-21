@@ -111,20 +111,14 @@ class Structure
     #[ORM\ManyToMany(targetEntity: Discipline::class)]
     private Collection $disciplines;
 
-    #[ORM\Column]
-    private ?bool $is_receiving_festival_program = null;
-
-    /**
-     * @var Collection<int, Contact>
-     */
-    #[ORM\OneToMany(targetEntity: Contact::class, mappedBy: 'structure_sending_festival_program')]
-    private Collection $contacts_receiving_festival_program;
-
     /**
      * @var Collection<int, StructurePhoneNumber>
      */
     #[ORM\OneToMany(targetEntity: StructurePhoneNumber::class, mappedBy: 'structure', orphanRemoval: true, cascade: ['persist'])]
     private Collection $phone_numbers;
+
+    #[ORM\OneToOne(targetEntity: PostProgram::class, mappedBy: 'structure', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private $postProgram = null;
 
     public function __construct()
     {
@@ -133,7 +127,6 @@ class Structure
         $this->structure_type_specializations = new ArrayCollection();
         $this->newsletter_types = new ArrayCollection();
         $this->disciplines = new ArrayCollection();
-        $this->contacts_receiving_festival_program = new ArrayCollection();
         $this->phone_numbers = new ArrayCollection();
     }
 
@@ -466,18 +459,6 @@ class Structure
         return $this;
     }
 
-    public function isReceivingFestivalProgram(): ?bool
-    {
-        return $this->is_receiving_festival_program;
-    }
-
-    public function setIsReceivingFestivalProgram(bool $is_receiving_festival_program): static
-    {
-        $this->is_receiving_festival_program = $is_receiving_festival_program;
-
-        return $this;
-    }
-
     public function setFestivalPartner(bool $is_festival_partner): static
     {
         $this->is_festival_partner = $is_festival_partner;
@@ -584,36 +565,6 @@ class Structure
     }
 
     /**
-     * @return Collection<int, Contact>
-     */
-    public function getContactsReceivingFestivalProgram(): Collection
-    {
-        return $this->contacts_receiving_festival_program;
-    }
-
-    public function addContactsReceivingFestivalProgram(Contact $contactsReceivingFestivalProgram): static
-    {
-        if (!$this->contacts_receiving_festival_program->contains($contactsReceivingFestivalProgram)) {
-            $this->contacts_receiving_festival_program->add($contactsReceivingFestivalProgram);
-            $contactsReceivingFestivalProgram->setStructureSendingFestivalProgram($this);
-        }
-
-        return $this;
-    }
-
-    public function removeContactsReceivingFestivalProgram(Contact $contactsReceivingFestivalProgram): static
-    {
-        if ($this->contacts_receiving_festival_program->removeElement($contactsReceivingFestivalProgram)) {
-            // set the owning side to null (unless already changed)
-            if ($contactsReceivingFestivalProgram->getStructureSendingFestivalProgram() === $this) {
-                $contactsReceivingFestivalProgram->setStructureSendingFestivalProgram(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, StructurePhoneNumber>
      */
     public function getPhoneNumbers(): Collection
@@ -642,4 +593,27 @@ class Structure
 
         return $this;
     }
+
+    public function getPostProgram(): ?PostProgram
+    {
+        return $this->postProgram;
+    }
+
+    public function setPostProgram(?PostProgram $postProgram): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($postProgram === null && $this->postProgram !== null) {
+            $this->postProgram->setStructure(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($postProgram !== null && $postProgram->getStructure() !== $this) {
+            $postProgram->setStructure($this);
+        }
+
+        $this->postProgram = $postProgram;
+
+        return $this;
+    }
+
 }

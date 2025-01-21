@@ -1,3 +1,6 @@
+post_program_address: Adresse d'envoi du programme du festival
+is_sent: Envoi du programme
+post_program: PROGRAMME DU FESTIVAL
 civility : Civilité
 firstname : Prénom
 lastname : Nom
@@ -74,6 +77,7 @@ contact_is_organization_participant: 'Contact(s) associé(s) étant adhérent.e(
 email_type: Email d'envoi du programme
 festival_program_is_sent: Envoi programme du festival
 contacts_receiving_festival_program: Contacts recevant le programme du festival
+none: Aucun(e)
 
 Parameters: Paramètres
 Dashboard: Tableau de bord

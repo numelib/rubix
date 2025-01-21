@@ -34,20 +34,27 @@ class ContactDetailType extends AbstractType
                 'attr' => ['required' => true],
                 'label' => $this->translator->trans('structure_function')
             ])
-            ->add('structure', EntityType::class, [
-                'class' => Structure::class,
-                'query_builder' => function (EntityRepository $er): QueryBuilder {
-                    return $er->createQueryBuilder('structure')
-                        ->select('structure', 'contacts_receiving_festival_program')
-                        // Avoid the Doctrine "n+1" problem
-                        ->leftJoin('structure.contacts_receiving_festival_program', 'contacts_receiving_festival_program')
-                        ->orderBy('structure.name', 'ASC');
-                },
-                'choice_label' => fn(Structure $structure) => ($structure->getAddressCity() !== null && !empty($structure->getAddressCity())) ? $structure . ' - ' . $structure->getAddressCity() : $structure,
-                'required' => false,
-                'attr' => ['required' => false],
-                'placeholder' => 'Aucun(e)'
-            ])
+            // ->add('structure', EntityType::class, [
+            //     'class' => Structure::class,
+            //     'query_builder' => function (EntityRepository $er): QueryBuilder {
+            //         return $er->createQueryBuilder('structure')
+            //             ->select('structure', 'contacts_receiving_festival_program', 'postProgram', 'contact_details', 'contact', 'postContact', 'postStructure', 'contactPostProgramStructure', 'contactPostProgram')
+            //             // Avoid the Doctrine "n+1" problem
+            //             ->join('structure.contacts_receiving_festival_program', 'contacts_receiving_festival_program')
+            //             ->join('structure.postProgram', 'postProgram')
+            //             ->join('postProgram.contact', 'postContact')
+            //             ->join('postProgram.structure', 'postStructure')
+            //             ->join('structure.contact_details', 'contact_details')
+            //             ->join('contact_details.contact', 'contact')
+            //             ->join('contact.postProgram', 'contactPostProgram')
+            //             ->join('contactPostProgram.structure', 'contactPostProgramStructure')
+            //             ->orderBy('structure.name', 'ASC');
+            //     },
+            //     'choice_label' => fn(Structure $structure) => ($structure->getAddressCity() !== null && !empty($structure->getAddressCity())) ? $structure . ' - ' . $structure->getAddressCity() : $structure,
+            //     'required' => false,
+            //     'attr' => ['required' => false],
+            //     'placeholder' => 'Aucun(e)'
+            // ])
             ->add('contactDetailPhoneNumbers', CollectionType::class, [
                 'entry_type' => ContactDetailPhoneNumberType::class,
                 'allow_add' => true,
