@@ -4,10 +4,13 @@ namespace App\Form\Admin;
 
 use App\Entity\ContactDetail;
 use App\Entity\Structure;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -16,12 +19,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ContactDetailType extends AbstractType
 {
-    private TranslatorInterface $translator;
-
-    public function __construct(TranslatorInterface $translator)
-    {
-        $this->translator = $translator;
-    }
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+        private readonly EntityManagerInterface $entityManager
+    ){}
     
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -38,16 +39,7 @@ class ContactDetailType extends AbstractType
             //     'class' => Structure::class,
             //     'query_builder' => function (EntityRepository $er): QueryBuilder {
             //         return $er->createQueryBuilder('structure')
-            //             ->select('structure', 'contacts_receiving_festival_program', 'postProgram', 'contact_details', 'contact', 'postContact', 'postStructure', 'contactPostProgramStructure', 'contactPostProgram')
-            //             // Avoid the Doctrine "n+1" problem
-            //             ->join('structure.contacts_receiving_festival_program', 'contacts_receiving_festival_program')
-            //             ->join('structure.postProgram', 'postProgram')
-            //             ->join('postProgram.contact', 'postContact')
-            //             ->join('postProgram.structure', 'postStructure')
-            //             ->join('structure.contact_details', 'contact_details')
-            //             ->join('contact_details.contact', 'contact')
-            //             ->join('contact.postProgram', 'contactPostProgram')
-            //             ->join('contactPostProgram.structure', 'contactPostProgramStructure')
+            //             ->addSelect('structure')
             //             ->orderBy('structure.name', 'ASC');
             //     },
             //     'choice_label' => fn(Structure $structure) => ($structure->getAddressCity() !== null && !empty($structure->getAddressCity())) ? $structure . ' - ' . $structure->getAddressCity() : $structure,
@@ -55,6 +47,13 @@ class ContactDetailType extends AbstractType
             //     'attr' => ['required' => false],
             //     'placeholder' => 'Aucun(e)'
             // ])
+            ->add('structure', ChoiceType::class, [
+                'choices' => $this->entityManager->getRepository(Structure::class)->findAll(),
+                'choice_label' => fn(Structure $structure) => ($structure->getAddressCity() !== null && !empty($structure->getAddressCity())) ? $structure . ' - ' . $structure->getAddressCity() : $structure,
+                'required' => false,
+                'attr' => ['required' => false],
+                'placeholder' => 'Aucun(e)'
+            ])
             ->add('contactDetailPhoneNumbers', CollectionType::class, [
                 'entry_type' => ContactDetailPhoneNumberType::class,
                 'allow_add' => true,
