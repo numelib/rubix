@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
 use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use App\Controller\Admin\Filter\ContactStructureFilter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -50,6 +51,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use App\Controller\Admin\Filter\HasStructureFilter;
 use App\Controller\Admin\Filter\HasStructureFunctionFilter;
+use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -138,11 +141,12 @@ class ContactCrudController extends AbstractCrudController
             ->setFormTypeOption('value_type_options.choice_label', fn($choice, string $key, mixed $value): string => $value)
         );
 
-        $filters
-            // ->add('is_receiving_festival_program')
-            ->add('newsletter_types');
+        $filters->add(
+            IsReceivingFestivalProgramFilter::new('postProgram', BooleanFilterType::class, [], $this->translator->trans('is_receiving_festival_program'))
+        );
 
         $filters
+            ->add('newsletter_types')
             ->add('is_festival_participant')
             ->add('is_board_of_directors_member')
             ->add('is_organization_participant');

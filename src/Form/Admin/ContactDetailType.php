@@ -35,18 +35,6 @@ class ContactDetailType extends AbstractType
                 'attr' => ['required' => true],
                 'label' => $this->translator->trans('structure_function')
             ])
-            // ->add('structure', EntityType::class, [
-            //     'class' => Structure::class,
-            //     'query_builder' => function (EntityRepository $er): QueryBuilder {
-            //         return $er->createQueryBuilder('structure')
-            //             ->addSelect('structure')
-            //             ->orderBy('structure.name', 'ASC');
-            //     },
-            //     'choice_label' => fn(Structure $structure) => ($structure->getAddressCity() !== null && !empty($structure->getAddressCity())) ? $structure . ' - ' . $structure->getAddressCity() : $structure,
-            //     'required' => false,
-            //     'attr' => ['required' => false],
-            //     'placeholder' => 'Aucun(e)'
-            // ])
             ->add('structure', ChoiceType::class, [
                 'choices' => $this->entityManager->getRepository(Structure::class)->findAll(),
                 'choice_label' => fn(Structure $structure) => ($structure->getAddressCity() !== null && !empty($structure->getAddressCity())) ? $structure . ' - ' . $structure->getAddressCity() : $structure,
