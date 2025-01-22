@@ -52,6 +52,7 @@ use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use App\Controller\Admin\Filter\HasStructureFilter;
 use App\Controller\Admin\Filter\HasStructureFunctionFilter;
 use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
+use App\Entity\PostProgram;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -261,10 +262,11 @@ class ContactCrudController extends AbstractCrudController
                 ->onlyOnIndex(),
 
             FormField::addTab($this->translator->trans('post_program'))
-                ->onlyOnForms(),
+                ->hideOnIndex(),
             AssociationField::new('postProgram', false)
                 ->renderAsEmbeddedForm(PostProgramFromContactCrudController::class)
-                ->onlyOnForms(),
+                ->formatValue(fn(?PostProgram $postProgram) => ($postProgram?->getAddress()) ? $this->translator->trans('Sent at') . ' : ' . $postProgram?->getAddress() : $this->translator->trans('Festival program is not sent to this contact'))
+                ->hideOnIndex(),
 
             FormField::addTab('PERSONNEL'),
             FormField::addColumn(6),

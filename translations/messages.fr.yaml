@@ -1,5 +1,6 @@
 post_program_address: Adresse d'envoi du programme du festival
 is_sent: Envoi du programme
+postProgram: PROGRAMME DU FESTIVAL
 post_program: PROGRAMME DU FESTIVAL
 civility : Civilité
 firstname : Prénom
@@ -78,6 +79,9 @@ email_type: Email d'envoi du programme
 festival_program_is_sent: Envoi programme du festival
 contacts_receiving_festival_program: Contacts recevant le programme du festival
 none: Aucun(e)
+Festival program is not sent to this structure: Le programme du festival n'est pas envoyé à cette structure
+Festival program is not sent to this contact: Le programme du festival n'est pas envoyé à ce contact
+Sent at: Envoyé à
 
 Parameters: Paramètres
 Dashboard: Tableau de bord

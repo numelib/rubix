@@ -223,10 +223,11 @@ class StructureCrudController extends AbstractCrudController
                 ->onlyOnDetail(),
                 
             FormField::addTab($this->translator->trans('post_program'))
-                ->onlyOnForms(),
+                ->hideOnIndex(),
             AssociationField::new('postProgram', false)
                 ->renderAsEmbeddedForm(PostProgramFromStructureCrudController::class)
-                ->onlyOnForms(),
+                ->formatValue(fn(?PostProgram $postProgram) => ($postProgram?->getAddress()) ? $this->translator->trans('Sent at') . ' : ' . $postProgram?->getAddress() : $this->translator->trans('Festival program is not sent to this structure'))
+                ->hideOnIndex(),
 
             FormField::addTab('COMMUNICATION'),
             FormField::addColumn(6),
