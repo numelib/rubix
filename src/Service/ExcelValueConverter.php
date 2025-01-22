@@ -51,4 +51,30 @@ class ExcelValueConverter
 
         return ($asObject) ? $result : $numbers;
     }
+
+    public function castValueTo(?string $value, ?string $castType) : string|bool|null
+    {   
+        $value = trim($value);
+        if($castType === 'bool') {
+            return match($value) {
+                'Oui' => true,
+                'Non' => false,
+                'non' => false,
+                'oui' => true,
+                'x' => false,
+                '' => false,
+                '...' => false,
+                null => false,
+            };
+        }
+
+        return match($value) {
+            '' => null,
+            '...' => null,
+            'x' => null,
+            'Madame' => 'F',
+            'Monsieur' => 'M',
+            default => $value
+        };
+    }
 }
