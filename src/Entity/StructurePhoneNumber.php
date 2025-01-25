@@ -2,25 +2,26 @@
 
 namespace App\Entity;
 
-use App\Repository\ContactDetailPhoneNumberRepository;
+use App\Repository\StructurePhoneNumberRepository;
 use Doctrine\ORM\Mapping as ORM;
 use libphonenumber\PhoneNumber;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 
-#[ORM\Entity(repositoryClass: ContactDetailPhoneNumberRepository::class)]
-class ContactDetailPhoneNumber
+#[ORM\Entity(repositoryClass: StructurePhoneNumberRepository::class)]
+class StructurePhoneNumber
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'contactDetailPhoneNumbers')]
-    private ?ContactDetail $contact_detail = null;
-
     #[AssertPhoneNumber()]
     #[ORM\Column(type: 'phone_number', nullable: true)]
     private ?PhoneNumber $value = null;
+
+    #[ORM\ManyToOne(inversedBy: 'phone_numbers')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Structure $structure = null;
 
     public function __toString()
     {
@@ -32,18 +33,6 @@ class ContactDetailPhoneNumber
         return $this->id;
     }
 
-    public function getContactDetail(): ?ContactDetail
-    {
-        return $this->contact_detail;
-    }
-
-    public function setContactDetail(?ContactDetail $contact_detail): static
-    {
-        $this->contact_detail = $contact_detail;
-
-        return $this;
-    }
-
     public function getValue(): ?PhoneNumber
     {
         return $this->value;
@@ -52,6 +41,18 @@ class ContactDetailPhoneNumber
     public function setValue(?PhoneNumber $value): static
     {
         $this->value = $value;
+
+        return $this;
+    }
+
+    public function getStructure(): ?Structure
+    {
+        return $this->structure;
+    }
+
+    public function setStructure(?Structure $structure): static
+    {
+        $this->structure = $structure;
 
         return $this;
     }

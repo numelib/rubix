@@ -20,6 +20,15 @@ class EasyAdminSubscriber implements EventSubscriberInterface
         private readonly EntityManagerInterface $entityManager,
     ){}
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            BeforeEntityPersistedEvent::class => 'addMailjetContact',
+            BeforeEntityUpdatedEvent::class => 'updateMailjetContact',
+            BeforeEntityDeletedEvent::class => 'deleteMailjetContact',
+        ];
+    }
+
     public function addMailjetContact(AbstractLifecycleEvent $event) : void
     {
         if(!$this->mailjetAPI->areCredentialsDefined() || !$this->mailjetAPI->areContactListsIdsDefined()) return;
@@ -115,14 +124,5 @@ class EasyAdminSubscriber implements EventSubscriberInterface
         if(!$isContactRegistered) return;
 
         $this->mailjetAPI->removeContactByEmail($newsletterEmail);
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            BeforeEntityPersistedEvent::class => 'addMailjetContact',
-            BeforeEntityUpdatedEvent::class => 'updateMailjetContact',
-            BeforeEntityDeletedEvent::class => 'deleteMailjetContact',
-        ];
     }
 }

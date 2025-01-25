@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Contact;
 use App\Entity\Structure;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -45,6 +46,19 @@ class StructureRepository extends ServiceEntityRepository
             ->groupBy('s.address_city')
             ->getQuery()
             ->getSingleColumnResult();
+    }
+
+    public function findByContact(Contact $contact) : array
+    {
+        $query = $this->createQueryBuilder('structure')
+            ->select('structure')
+            ->leftJoin('structure.contact_details', 'contact_details')
+            ->leftJoin('contact_details.contact', 'contact')
+            ->where('contact = :contact')
+            ->setParameter('contact', $contact)
+            ->getQuery();
+
+        return $query->getResult();
     }
 
     //    /**

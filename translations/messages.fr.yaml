@@ -1,3 +1,7 @@
+post_program_address: Adresse d'envoi du programme du festival
+is_sent: Envoi du programme
+postProgram: PROGRAMME DU FESTIVAL
+post_program: PROGRAMME DU FESTIVAL
 civility : Civilité
 firstname : Prénom
 lastname : Nom
@@ -14,6 +18,7 @@ professional_notes : Notes
 personnal_email : Email perso
 professional_email : Email pro
 personnal_phone_number : Téléphone perso
+structure_phone_number: Numéro(s) de téléphone de la Structure
 Address: Adresse
 address_street : Rue
 address_adition : Complément
@@ -34,6 +39,8 @@ structure_type_specializations : Sous-type de structure
 name : Nom
 email : Email générique
 phone_number : Numéro de téléphone
+phone_numbers : Numéros de téléphone
+country: Pays
 is_festival_organizer : Organisation d'un festival
 is_company_programmed_in_festival : Compagnie programmée dans le festival
 is_workshop_partner : Structure partenaire ateliers
@@ -71,6 +78,10 @@ contact_is_organization_participant: 'Contact(s) associé(s) étant adhérent.e(
 email_type: Email d'envoi du programme
 festival_program_is_sent: Envoi programme du festival
 contacts_receiving_festival_program: Contacts recevant le programme du festival
+none: Aucun(e)
+Festival program is not sent to this structure: Le programme du festival n'est pas envoyé à cette structure
+Festival program is not sent to this contact: Le programme du festival n'est pas envoyé à ce contact
+Sent at: Envoyé à
 
 Parameters: Paramètres
 Dashboard: Tableau de bord

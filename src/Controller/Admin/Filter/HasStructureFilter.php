@@ -22,22 +22,27 @@ class HasStructureFilter implements FilterInterface
             ->setProperty($propertyName)
             ->setLabel($label)
             ->setFormType(EntityFilterType::class)
-            ->setFormTypeOption('value_type_options.class', Structure::class)
-            ->setFormTypeOption('value_type_options.query_builder', function (StructureRepository $structureRepository): QueryBuilder {
-                return $structureRepository->createQueryBuilder('structure')
-                    ->leftJoin('structure.contacts_receiving_festival_program', 'contacts')
-                    ->addSelect('contacts');
+            ->setFormTypeOption('value_type_options.choice_label', function(?Structure $structure) {
+                $label = $structure?->__toString();
+                if($structure?->getAddressCity() !== null) {
+                    $label .= ' - ' . $structure->getAddressCity();
+                }
+                return $label;
             })
+            ->setFormTypeOption('value_type_options.class', Structure::class)
+            ->setFormTypeOption('value_type_options.multiple', true)
             ;
     }
 
     public function apply(QueryBuilder $queryBuilder, FilterDataDto $filterDataDto, ?FieldDto $fieldDto, EntityDto $entityDto): void
     {
-        if(null !== $filterDataDto->getValue()){
+        if(null === $filterDataDto->getValue()) return;
+
+        if($filterDataDto->getFormTypeOption('value_type_options.multiple') === true) {
             $queryBuilder
                 ->leftJoin('entity.contact_details', 'contact_detail')
                 ->leftJoin('contact_detail.structure', 'contact_structure')
-                ->andWhere('contact_structure = :structure')
+                ->andWhere(sprintf('contact_structure %s (:structure)', $filterDataDto->getComparison()))
                 ->setParameter('structure', $filterDataDto->getValue())
             ;
         }

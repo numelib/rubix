@@ -2,9 +2,13 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
+use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use App\Entity\Contact;
+use App\Entity\PostProgram;
 use App\Entity\Structure;
 use App\Entity\StructureTypeSpecialization;
+use App\Form\Admin\StructurePhoneNumberType;
 use App\Repository\ContactRepository;
 use App\Service\EntitySpreadsheetGenerator;
 use Doctrine\Common\Collections\Criteria;
@@ -25,6 +29,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
@@ -37,6 +42,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -76,11 +82,6 @@ class StructureCrudController extends AbstractCrudController
     {
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
-        $queryBuilder
-            ->leftJoin('entity.contacts_receiving_festival_program', 'contacts_receiving_festival_program')
-            ->addSelect('contacts_receiving_festival_program')
-        ;
-        
         return $queryBuilder;
     }
 
@@ -99,10 +100,10 @@ class StructureCrudController extends AbstractCrudController
 
         $filters
             ->add(ChoiceFilter::new('address_code')->setChoices(empty($adressCodesChoices) ? ["Aucun" => 0] : $adressCodesChoices)->setFormTypeOption('value_type_options.multiple', true))
-            ->add(ChoiceFilter::new('address_city')->setChoices(empty($adressCitiesChoices) ? ["Aucun" => 0] : $adressCitiesChoices)->setFormTypeOption('value_type_options.multiple', true));
+            ->add(ChoiceFilter::new('address_city')->setChoices(empty($adressCitiesChoices) ? ["Aucun" => 0] : $adressCitiesChoices)->setFormTypeOption('value_type_options.multiple', true))
+            ->add(IsReceivingFestivalProgramFilter::new('postProgram', BooleanFilterType::class, [], $this->translator->trans('is_receiving_festival_program')));
 
         $filters
-            ->add('is_receiving_festival_program')
             ->add('near_parcs')
             ->add('newsletter_types')
         ;
@@ -113,57 +114,6 @@ class StructureCrudController extends AbstractCrudController
             ->add('is_workshop_partner');
 
         return $filters;
-    }
-
-    public function exportAsXls(BatchActionDto $batchActionDto) : Response
-    {
-        $className = $batchActionDto->getEntityFqcn();
-        $entityManager = $this->container->get('doctrine')->getManagerForClass($className);
-
-        $fields =  [
-            'name',
-            'email',
-            'phone_number',
-            'is_festival_organizer',
-            'is_company_programmed_in_festival',
-            'is_workshop_partner',
-            'address_street',
-            'address_adition',
-            'address_code',
-            'address_country',
-            'address_city',
-            'near_parcs',
-            'structure_type',
-            'structure_type_specializations',
-            'festival_informations',
-            'is_receiving_festival_program',
-            'is_festival_partner',
-            'newsletter_email',
-            'newsletter_types',
-            // 'festival_program_receipt_contacts',
-        ];
-
-        $entities = array_map(function($id) use ($className, $entityManager) {
-            return $entityManager->find($className, $id);
-        }, $batchActionDto->getEntityIds());
-
-        $spreadsheet = $this->entitySpreadsheetGenerator
-            ->setWorksheetTitle('Structures')
-            ->getSpreadsheet($entities, $fields);
-
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, "Xlsx");
-
-        ob_start();
-        $writer->save('php://output');
-
-        return new Response(
-            ob_get_clean(),
-            200,
-            array(
-                'Content-Type' => 'application/vnd.ms-excel',
-                'Content-Disposition' => 'attachment; filename="Export - Structures.xls"',
-            )
-        );
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -224,7 +174,12 @@ class StructureCrudController extends AbstractCrudController
             FormField::addColumn(6),
             FormField::addFieldset('Coordonnées'),
             EmailField::new('email', $this->translator->trans('email')),
-            TelephoneField::new('phone_number', $this->translator->trans('phone_number')),
+            CollectionField::new('phone_numbers', $this->translator->trans('structure_phone_number'))
+                ->setEntryType(StructurePhoneNumberType::class)
+                ->allowDelete(true)
+                ->setEntryIsComplex()
+                ->renderExpanded()
+                ->hideOnIndex(),
             FormField::addFieldset('Adresse')
                 ->hideOnIndex(),
             TextField::new('address_street', $this->translator->trans('address_street'))
@@ -266,35 +221,17 @@ class StructureCrudController extends AbstractCrudController
             Field::new('contacts', false)
                 ->setTemplatePath('admin/fields/contacts.html.twig')
                 ->onlyOnDetail(),
+                
+            FormField::addTab($this->translator->trans('post_program'))
+                ->hideOnIndex(),
+            AssociationField::new('postProgram', false)
+                ->renderAsEmbeddedForm(PostProgramFromStructureCrudController::class)
+                ->formatValue(fn(?PostProgram $postProgram) => ($postProgram?->getAddress()) ? $this->translator->trans('Sent at') . ' : ' . $postProgram?->getAddress() : $this->translator->trans('Festival program is not sent to this structure'))
+                ->hideOnIndex(),
 
             FormField::addTab('COMMUNICATION'),
             FormField::addColumn(6),
             FormField::addFieldset('Général'),
-            BooleanField::new('is_receiving_festival_program', $this->translator->trans('is_receiving_festival_program'))
-                ->hideOnIndex(),
-            AssociationField::new('contacts_receiving_festival_program', $this->translator->trans('contacts_receiving_festival_program'))
-                ->setFormTypeOptions([
-                    'query_builder' => function (ContactRepository $contactRepository) use ($entity) : QueryBuilder {
-                        $queryBuilder = $contactRepository->createQueryBuilder('contact')
-                            ->leftJoin('contact.structure_sending_festival_program', 'structure_sending_festival_program')
-                            ->leftJoin('contact.contact_details', 'contact_details')
-                            ->addSelect('contact_details');
-
-                        if($entity !== null && $entity->getId() !== null && $entity instanceof Structure) {
-                            $queryBuilder
-                                ->leftJoin('contact_details.structure', 'structure')
-                                ->addSelect('structure')
-                                ->where('structure = :structure')
-                                ->setParameter('structure', $entity)
-                                ->orderBy('contact.lastname', 'ASC');
-                        }
-
-                        return $queryBuilder;
-                    },
-                    'by_reference' => false,
-                ])
-                ->setTemplatePath('admin/fields/contact_association_field.html.twig')
-                ->hideOnIndex(),
             AssociationField::new('near_parcs', $this->translator->trans('near_parcs'))
                 ->setTemplatePath('admin/fields/association_field.html.twig')
                 ->renderAsNativeWidget()
@@ -400,6 +337,35 @@ class StructureCrudController extends AbstractCrudController
                 $event->getForm()->getParent()?->add('structure_type_specializations', EntityType::class, $options);
             }
         );
+
+        // $builder->get('postProgram')->addEventListener(
+        //     FormEvents::POST_SUBMIT,
+        //     function (FormEvent $event): void {
+        //         $isSent = $event->getForm()->get('is_sent')->getData();
+        //         $postProgram = $event->getData();
+
+        //         if(!$isSent) {
+        //         }
+        //     }
+        // );
+    }
+
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if(!$entityInstance->getPostProgram()?->getIsSent()){
+            $entityInstance->setPostProgram(null);
+        }
+        
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+    
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if(!$entityInstance->getPostProgram()?->getIsSent()){
+            $entityInstance->setPostProgram(null);
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
     }
 
     protected function getRedirectResponseAfterSave(AdminContext $context, string $action): RedirectResponse
@@ -417,5 +383,55 @@ class StructureCrudController extends AbstractCrudController
         }
 
         return parent::getRedirectResponseAfterSave($context, $action);
+    }
+
+    public function exportAsXls(BatchActionDto $batchActionDto) : Response
+    {
+        $className = $batchActionDto->getEntityFqcn();
+        $entityManager = $this->container->get('doctrine')->getManagerForClass($className);
+
+        $fields =  [
+            'name',
+            'email',
+            'phone_numbers',
+            'is_festival_organizer',
+            'is_company_programmed_in_festival',
+            'is_workshop_partner',
+            'address_street',
+            'address_adition',
+            'address_code',
+            'address_country',
+            'address_city',
+            'near_parcs',
+            'structure_type',
+            'structure_type_specializations',
+            'festival_informations',
+            'post_program_address',
+            'is_festival_partner',
+            'newsletter_email',
+            'newsletter_types',
+        ];
+
+        $entities = array_map(function($id) use ($className, $entityManager) {
+            return $entityManager->find($className, $id);
+        }, $batchActionDto->getEntityIds());
+
+        $spreadsheet = $this->entitySpreadsheetGenerator
+            ->setWorksheetTitle('Structures')
+            ->getSpreadsheet($entities, $fields);
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, "Xlsx");
+
+        ob_start();
+        $writer->save('php://output');
+
+        return new Response(
+            ob_get_clean(),
+            200,
+            array(
+                'Content-Type' => 'application/vnd.ms-excel',
+                'Content-Disposition' => 'attachment; filename="Export - Structures.xls"',
+            )
+        );
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
+use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use App\Controller\Admin\Filter\ContactStructureFilter;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -49,6 +51,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use App\Controller\Admin\Filter\HasStructureFilter;
 use App\Controller\Admin\Filter\HasStructureFunctionFilter;
+use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
+use App\Entity\PostProgram;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -72,10 +76,8 @@ class ContactCrudController extends AbstractCrudController
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
         $queryBuilder
-            ->leftJoin('entity.structure_sending_festival_program', 'structure_sending_festival_program')
             ->leftJoin('entity.contact_details', 'contact_details')
             ->leftJoin('contact_details.structure', 'structure')
-            ->addSelect('contact_details', 'structure', 'structure_sending_festival_program')
         ;
         
         return $queryBuilder;
@@ -140,11 +142,12 @@ class ContactCrudController extends AbstractCrudController
             ->setFormTypeOption('value_type_options.choice_label', fn($choice, string $key, mixed $value): string => $value)
         );
 
-        $filters
-            ->add('is_receiving_festival_program')
-            ->add('newsletter_types');
+        $filters->add(
+            IsReceivingFestivalProgramFilter::new('postProgram', BooleanFilterType::class, [], $this->translator->trans('is_receiving_festival_program'))
+        );
 
         $filters
+            ->add('newsletter_types')
             ->add('is_festival_participant')
             ->add('is_board_of_directors_member')
             ->add('is_organization_participant');
@@ -229,7 +232,7 @@ class ContactCrudController extends AbstractCrudController
                 ->renderAsHtml()
                 ->onlyOnDetail(),
 
-            FormField::addColumn(6),
+            FormField::addColumn(6), 
             FormField::addFieldset('Coordonnées'),
             CollectionField::new('contact_details', $this->translator->trans('contact_details'))
                 ->setEntryType(ContactDetailType::class)
@@ -239,11 +242,12 @@ class ContactCrudController extends AbstractCrudController
                 ->renderExpanded()
                 ->hideOnIndex()
                 ->addFormTheme('themes/contact_details_collection.html.twig')
-                ->setTemplatePath('admin/fields/contact_details.html.twig'),
+                ->setTemplatePath('admin/fields/contact_details.html.twig')
+                ,
             Field::new('structures_functions', $this->translator->trans('structure_functions'))
                 ->formatValue(fn(ArrayCollection $structuresFunctions) => implode(', ', $structuresFunctions->toArray()))
                 ->onlyOnIndex(),
-            Field::new('structures', $this->translator->trans('structures'))
+            Field::new('formatted_structures', $this->translator->trans('structures'))
                 ->formatValue(function(ArrayCollection $structures)  {
                     $anchor = '<a href="">';
                     $structures = array_map(function(Structure $structure) {
@@ -256,12 +260,31 @@ class ContactCrudController extends AbstractCrudController
                     return implode(', ', $structures);
                 })
                 ->onlyOnIndex(),
+
+            FormField::addTab($this->translator->trans('post_program'))
+                ->hideOnIndex(),
+            AssociationField::new('postProgram', false)
+                ->renderAsEmbeddedForm(PostProgramFromContactCrudController::class)
+                ->formatValue(fn(?PostProgram $postProgram) => ($postProgram?->getAddress()) ? $this->translator->trans('Sent at') . ' : ' . $postProgram?->getAddress() : $this->translator->trans('Festival program is not sent to this contact'))
+                ->hideOnIndex(),
+
             FormField::addTab('PERSONNEL'),
             FormField::addColumn(6),
             FormField::addFieldset('Général'),
             EmailField::new('personnal_email', $this->translator->trans('personnal_email'))
                 ->hideOnIndex(),
             TelephoneField::new('personnal_phone_number', $this->translator->trans('personnal_phone_number'))
+                ->setFormType(PhoneNumberType::class)
+                ->setFormTypeOptions([
+                    'widget' => PhoneNumberType::WIDGET_COUNTRY_CHOICE,
+                    'preferred_country_choices' => ['FR', 'US'],
+                    'number_options' => [
+                        'label' => $this->translator->trans('phone_number')
+                    ],
+                    'country_options' => [
+                        'label' => $this->translator->trans('country'),
+                    ],
+                ])
                 ->hideOnIndex(),
             TextEditorField::new('personnal_notes', $this->translator->trans('personnal_notes'))
                 ->onlyOnForms(),
@@ -290,8 +313,6 @@ class ContactCrudController extends AbstractCrudController
 
             FormField::addColumn(6),
             FormField::addFieldset('Général'),
-            BooleanField::new('is_receiving_festival_program', $this->translator->trans('is_receiving_festival_program'))
-                ->hideOnIndex(),
             TextEditorField::new('communication_notes', $this->translator->trans('communication_notes'))
                 ->onlyOnForms(),
             TextField::new('communication_notes', $this->translator->trans('professional_notes'))
@@ -402,6 +423,38 @@ class ContactCrudController extends AbstractCrudController
                 $event->getForm()->getParent()?->add('disciplines', EntityType::class, $options);
             }
         );
+
+        /*$builder->get('postProgram')->addEventListener(
+            FormEvents::POST_SUBMIT,
+            function (FormEvent $event): void {
+                $isSent = $event->getForm()->get('is_sent')->getData();
+                $postProgram = $event->getData();
+
+                if(!$isSent) {
+                    $this->entityManager->remove($postProgram);
+                    $this->entityManager->flush();
+                }
+            }
+        );*/
+    }
+
+    
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if(!$entityInstance->getPostProgram()?->getIsSent()){
+            $entityInstance->setPostProgram(null);
+        }
+        
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+    
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if(!$entityInstance->getPostProgram()?->getIsSent()){
+            $entityInstance->setPostProgram(null);
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
     }
 
     public function exportAsXls(BatchActionDto $batchActionDto) : Response
@@ -431,7 +484,7 @@ class ContactCrudController extends AbstractCrudController
             'address_country',
             'newsletter_email',
             'newsletter_types',
-            'is_receiving_festival_program',
+            'post_program_address',
             'is_festival_participant',
             'is_board_of_directors_member',
             'is_organization_participant',

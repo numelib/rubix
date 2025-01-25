@@ -2,19 +2,19 @@
 
 namespace App\Form\Admin;
 
-use App\Entity\ContactDetailPhoneNumber;
+use App\Entity\StructurePhoneNumber;
 use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ContactDetailPhoneNumberType extends AbstractType
+class StructurePhoneNumberType extends AbstractType
 {
     public function __construct(
         private readonly TranslatorInterface $translator
     ){}
-
+    
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -35,7 +35,7 @@ class ContactDetailPhoneNumberType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => ContactDetailPhoneNumber::class,
+            'data_class' => StructurePhoneNumber::class,
         ]);
     }
 }

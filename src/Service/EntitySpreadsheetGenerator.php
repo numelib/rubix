@@ -11,6 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\PersistentCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use Exception;
+use libphonenumber\PhoneNumber;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -88,35 +90,31 @@ class EntitySpreadsheetGenerator
             foreach($fields as $field)
             {
                 $cell['position'] = $cell['column'] . $cell['row'];
-                $cell['value'] = $propertyAccessor->getValue($entity, $field);
-
-                // Quick and dirty
-                if($entity instanceof Structure && $field === 'is_receiving_festival_program') {
-                    $structure = $entity;
-
-                    if($structure->isReceivingFestivalProgram() === true) {
-                        $contactAddresses = array_map(fn(Contact $contact) => $contact->getFormattedAddress(oneline : true), $structure->getContactsReceivingFestivalProgram()->toArray());
-                        $cell['value'] = empty($contactAddresses) ? $structure->getFormattedAddress(oneline : true) : implode(', ', $contactAddresses);
-                        $cell['vlaue'] = str_replace('<br>', ' ', $cell['value']);
-                    } else {
-                        $cell['value'] = 'Aucun.e';
+                $cell['value'] = 'Aucun(e)';
+                if($propertyAccessor->isReadable($entity, $field)) {
+                    $cell['value'] = $propertyAccessor->getValue($entity, $field);
+    
+                    if($cell['value'] instanceof Collection) {
+                        $cell['value'] = implode(', ', $cell['value']->toArray());
+                        if(empty($cell['value'])) $cell['value'] = $cell['default_value'];
                     }
-                }
-
-                if($cell['value'] instanceof Collection) {
-                    $cell['value'] = implode(', ', $cell['value']->toArray());
-                    if(empty($cell['value'])) $cell['value'] = $cell['default_value'];
-                }
-
-                // Remplacement de valeurs
-                foreach($this->valueReplacements as $replacement)
-                {
-                    if($cell['value'] === $replacement['value']) $cell['value'] = $replacement['defaultsTo'];
+    
+                    // Remplacement de valeurs
+                    foreach($this->valueReplacements as $replacement)
+                    {
+                        if($cell['value'] === $replacement['value']) $cell['value'] = $replacement['defaultsTo'];
+                    }
+                } else {
+                    if($entity instanceof Structure && $field === 'post_program_address') {
+                        $structure = $entity;
+                        $address = $structure?->getPostProgram()?->getAddress();
+                        $cell['value'] = ($address !== null) ? $address : 'Aucun(e)';
+                    }
                 }
 
                 $spreadsheet->getActiveSheet()->setCellValue($cell['position'], $cell['value']);
                 $spreadsheet->getActiveSheet()->getColumnDimension($cell['column'])->setAutoSize(true);
-                
+
                 $cell['column']++;
             }
 
@@ -169,19 +167,14 @@ class EntitySpreadsheetGenerator
                             $cell['value'] = $this->translator->trans($cell['value']);
                         }
 
-                        if($field === 'is_receiving_festival_program') {
-
-                            if($cell['value'] === true) {
-                                $cell['value'] = str_replace('<br>', ' ', $contact->getFormattedAddress());
-                            } else {
-                                $cell['value'] = str_replace('<br>', ' ', $contact->getStructureSendingFestivalProgram()?->getFormattedAddress(oneline : true)) ?? 'Aucun.e';
-                            }
-
-                            $spreadsheet->getActiveSheet()->setCellValue($cell['position'], $cell['value']);
+                        if($field === 'personnal_phone_number' && $cell['value'] instanceof PhoneNumber) {
+                            $cell['value'] = '+' . $cell['value']->getCountryCode() . $cell['value']->getNationalNumber();
+                            
+                            $spreadsheet->getActiveSheet()->setCellValueExplicit($cell['position'], $cell['value'], DataType::TYPE_STRING);
                             $spreadsheet->getActiveSheet()->getColumnDimension($cell['column'])->setAutoSize(true);
 
                             $cell['column']++;
-                            
+
                             continue;
                         }
                         
@@ -201,11 +194,16 @@ class EntitySpreadsheetGenerator
                             continue;
                         }
                     } else {
+                        if($field === 'post_program_address') {
+                            $address = $contact?->getPostProgram()?->getAddress();
+                            $cell['value'] = ($address !== null) ? $address : 'Aucun.e';
+                        }
+
                         if($contactDetails->count() > 0) {
                             if($field === 'structure') {
                                 $contactDetail = $contactDetails->toArray()[$i];
     
-                                $cell['value'] = $contactDetail->getStructure()->__toString();
+                                $cell['value'] = $contactDetail->getStructure()?->__toString();
                             }
     
                             if($field === 'structure_function') {
@@ -218,6 +216,13 @@ class EntitySpreadsheetGenerator
     
                             if($field === 'professionnal_phone_numbers') {
                                 $cell['value'] = implode(', ', $contactDetail->getContactDetailPhoneNumbers()->toArray());
+
+                                $spreadsheet->getActiveSheet()->setCellValueExplicit($cell['position'], $cell['value'], DataType::TYPE_STRING);
+                                $spreadsheet->getActiveSheet()->getColumnDimension($cell['column'])->setAutoSize(true);
+
+                                $cell['column']++;
+
+                                continue;
                             }
                         }
                     }
