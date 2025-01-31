@@ -71,14 +71,29 @@ class ContactCrudController extends AbstractCrudController
         return Contact::class;
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+        $crud
+            ->setEntityLabelInSingular('Contact')
+            ->setEntityLabelInPlural('Contacts')
+            ->renderContentMaximized()
+            ->setFormThemes(['admin/form/contact_profile_type.html.twig', '@EasyAdmin/crud/form_theme.html.twig'])
+            ->setPaginatorPageSize(20)
+            ->setPaginatorRangeSize(4)
+            ->setDefaultSort(['lastname' => 'ASC'])
+            ->setSearchFields(['firstname', 'lastname', 'contact_details.structure.name']);
+
+        return $crud;
+    }
+
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
-        $queryBuilder
-            ->leftJoin('entity.contact_details', 'contact_details')
-            ->leftJoin('contact_details.structure', 'structure')
-        ;
+        // $queryBuilder
+        //     ->leftJoin('entity.contact_details', 'contact_details')
+        //     ->leftJoin('contact_details.structure', 'structure')
+        // ;
         
         return $queryBuilder;
     }
@@ -153,20 +168,6 @@ class ContactCrudController extends AbstractCrudController
             ->add('is_organization_participant');
 
         return $filters;
-    }
-
-    public function configureCrud(Crud $crud): Crud
-    {
-        $crud
-            ->setEntityLabelInSingular('Contact')
-            ->setEntityLabelInPlural('Contacts')
-            ->renderContentMaximized()
-            ->setFormThemes(['admin/form/contact_profile_type.html.twig', '@EasyAdmin/crud/form_theme.html.twig'])
-            ->setPaginatorPageSize(20)
-            ->setPaginatorRangeSize(4)
-            ->setDefaultSort(['lastname' => 'ASC']);
-
-        return $crud;
     }
 
     public function configureFields(string $pageName): iterable
