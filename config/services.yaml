@@ -27,11 +27,11 @@ services:
         public: true
         tags: ['doctrine']
 
-    # App\Form\Admin\ContactNewsletterType:
-    #     arguments: ["%kernel.cache_dir%"]
-
-    # App\Form\Admin\StructureNewsletterType:
-    #     arguments: ["%kernel.cache_dir%"]
-
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\EventListener\ProgramPostingListener:
+        tags:
+        - name: 'doctrine.orm.entity_listener'
+          event: 'postPersist'
+          entity: 'App\Entity\ProgramPosting'
+        - name: 'doctrine.orm.entity_listener'
+          event: 'postUpdate'
+          entity: 'App\Entity\ProgramPosting'  

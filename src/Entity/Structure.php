@@ -63,6 +63,12 @@ class Structure
     #[ORM\OneToMany(targetEntity: ContactDetail::class, mappedBy: 'structure', cascade : ['remove'])]
     private Collection $contact_details;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $programSent = false; // Default value
+
+    #[ORM\OneToMany(targetEntity: ProgramPosting::class, mappedBy: 'structure', cascade : ['persist'])]
+    private Collection $programPostings;
+
     /**
      * @var Collection<int, Parc>
      */
@@ -77,9 +83,6 @@ class Structure
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $festival_informations = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $festival_program_receipt_email = null;
 
     #[ORM\Column(length: 500, type: "text", nullable: true)]
     private ?string $communication_notes = null;
@@ -117,9 +120,6 @@ class Structure
     #[ORM\OneToMany(targetEntity: StructurePhoneNumber::class, mappedBy: 'structure', orphanRemoval: true, cascade: ['persist'])]
     private Collection $phone_numbers;
 
-    #[ORM\OneToOne(targetEntity: PostProgram::class, mappedBy: 'structure', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private $postProgram = null;
-
     public function __construct()
     {
         $this->contact_details = new ArrayCollection();
@@ -128,6 +128,7 @@ class Structure
         $this->newsletter_types = new ArrayCollection();
         $this->disciplines = new ArrayCollection();
         $this->phone_numbers = new ArrayCollection();
+        $this->programPostings = new ArrayCollection();
     }
 
     public function __toString()
@@ -386,18 +387,6 @@ class Structure
         return $this;
     }
 
-    public function getFestivalProgramReceiptEmail(): ?string
-    {
-        return $this->festival_program_receipt_email;
-    }
-
-    public function setFestivalProgramReceiptEmail(?string $festival_program_receipt_email): static
-    {
-        $this->festival_program_receipt_email = $festival_program_receipt_email;
-
-        return $this;
-    }
-
     public function getCommunicationNotes(): ?string
     {
         return $this->communication_notes;
@@ -504,6 +493,16 @@ class Structure
         return new ArrayCollection($contacts);
     }
 
+    /*public function getPostingContacts()
+    {
+        $contacts = array_unique($this->getContactDetails()
+            ->map(fn(ContactDetail $contactDetail) => $contactDetail->getContact())
+            ->filter(fn(?Contact $contact) => !is_null($contact))
+            ->toArray(), SORT_REGULAR);
+
+        return $this->getContacts() ? $this->getContacts()->toArray() : [];
+    }*/
+
     public function getNewsletterEmail(): ?string
     {
         return $this->newsletter_email;
@@ -594,24 +593,49 @@ class Structure
         return $this;
     }
 
-    public function getPostProgram(): ?PostProgram
+    /**
+     * @return Collection<int, ProgramPosting>
+     */
+    public function getProgramPostings(): Collection
     {
-        return $this->postProgram;
+        return $this->programPostings;
     }
 
-    public function setPostProgram(?PostProgram $postProgram): static
+    public function addProgramPosting(ProgramPosting $programPosting): static
     {
-        // unset the owning side of the relation if necessary
-        if ($postProgram === null && $this->postProgram !== null) {
-            $this->postProgram->setStructure(null);
+        if (!$this->programPostings->contains($programPosting)) {
+            $this->programPostings->add($programPosting);
+            $programPosting->setStructure($this);
         }
 
-        // set the owning side of the relation if necessary
-        if ($postProgram !== null && $postProgram->getStructure() !== $this) {
-            $postProgram->setStructure($this);
+        return $this;
+    }
+
+    public function removeProgramPosting(ProgramPosting $programPosting): static
+    {
+        if ($this->programPostings->removeElement($programPosting)) {
+            // set the owning side to null (unless already changed)
+            if ($programPosting->getStructure() === $this) {
+                $programPosting->setStructure(null);
+            }
         }
 
-        $this->postProgram = $postProgram;
+        return $this;
+    }
+
+    public function isProgramSent(): ?bool
+    {
+        return $this->programSent;
+    }
+
+    public function getProgramSent(): ?bool
+    {
+        return $this->programSent;
+    }
+
+    public function setProgramSent(bool $programSent): static
+    {
+        $this->programSent = $programSent;
 
         return $this;
     }

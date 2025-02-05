@@ -24,7 +24,10 @@ class ContactDetailPhoneNumber
 
     public function __toString()
     {
-        return '+' . $this->value->getCountryCode() .  $this->value->getNationalNumber();
+        $string = null;
+        $string .= $this->value ? '+' . $this->value->getCountryCode() .  $this->value->getNationalNumber() : '';
+
+        return $string;
     }
 
     public function getId(): ?int

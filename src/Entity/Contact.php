@@ -5,14 +5,18 @@ namespace App\Entity;
 use App\Repository\ContactRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use libphonenumber\PhoneNumber;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Intl\Countries;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 
+use App\Validator as ProgramPostingAssert;
+
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[ProgramPostingAssert\ContactProgramPosting]
 class Contact
 {
     #[ORM\Id]
@@ -110,11 +114,14 @@ class Contact
     /**
      * @var Collection<int, ContactDetail>
      */
-    #[ORM\OneToMany(targetEntity: ContactDetail::class, mappedBy: 'contact', cascade : ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: ContactDetail::class, mappedBy: 'contact', cascade: ['persist', 'remove'])]
     private Collection $contact_details;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $festival_program_receipt_email = null;
+    #[ORM\OneToOne(targetEntity: ProgramPosting::class, mappedBy: 'contact', cascade: ['persist', 'remove'])]
+    private ?ProgramPosting $programPosting = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $programSent = false; // Default value
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $newsletter_email = null;
@@ -124,9 +131,6 @@ class Contact
      */
     #[ORM\ManyToMany(targetEntity: NewsletterType::class, inversedBy: 'contacts')]
     private Collection $newsletter_types;
-
-    #[ORM\OneToOne(targetEntity: PostProgram::class, mappedBy: 'contact', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private $postProgram = null;
 
     public function __construct()
     {
@@ -479,18 +483,6 @@ class Contact
         return $this;
     }
 
-    public function getFestivalProgramReceiptEmail(): ?string
-    {
-        return $this->festival_program_receipt_email;
-    }
-
-    public function setFestivalProgramReceiptEmail(?string $festival_program_receipt_email): static
-    {
-        $this->festival_program_receipt_email = $festival_program_receipt_email;
-
-        return $this;
-    }
-
     public function getContactDetailsString() : string
     {
         $contact_details = $this->contact_details->toArray();
@@ -649,8 +641,7 @@ class Contact
 
         return $structures;
     }
-
-
+    
     public function getNewsletterEmail(): ?string
     {
         return $this->newsletter_email;
@@ -702,27 +693,43 @@ class Contact
         }
     }
 
-    public function getPostProgram(): ?PostProgram
+    // Getter and Setter for programSent
+    public function getProgramSent(): bool
     {
-        return $this->postProgram;
+        return $this->programSent;
     }
 
-    public function setPostProgram(?PostProgram $postProgram): static
+    public function setProgramSent(bool $programSent): self
     {
-        // unset the owning side of the relation if necessary
-        if ($postProgram === null && $this->postProgram !== null) {
-            $this->postProgram->setContact(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($postProgram !== null && $postProgram->getContact() !== $this) {
-            $postProgram->setContact($this);
-        }
-
-        $this->postProgram = $postProgram;
-
+        $this->programSent = $programSent;
         return $this;
     }
 
+    public function isProgramSent(): ?bool
+    {
+        return $this->programSent;
+    }
+
+    public function getProgramPosting(): ?ProgramPosting
+    {
+        return $this->programPosting;
+    }
+
+    public function setProgramPosting(?ProgramPosting $programPosting): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($programPosting === null && $this->programPosting !== null) {
+            $this->programPosting->setContact(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($programPosting !== null && $programPosting->getContact() !== $this) {
+            $programPosting->setContact($this);
+        }
+
+        $this->programPosting = $programPosting;
+
+        return $this;
+    }
 
 }

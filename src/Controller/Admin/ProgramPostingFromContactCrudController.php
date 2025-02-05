@@ -3,7 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Contact;
-use App\Entity\PostProgram;
+use App\Entity\ProgramPosting;
 use App\Entity\Structure;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
@@ -17,7 +17,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class PostProgramFromContactCrudController extends AbstractCrudController
+class ProgramPostingFromContactCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly TranslatorInterface $translator,
@@ -26,7 +26,7 @@ class PostProgramFromContactCrudController extends AbstractCrudController
     
     public static function getEntityFqcn(): string
     {
-        return PostProgram::class;
+        return ProgramPosting::class;
     }
 
     public function configureFields(string $pageName): iterable
@@ -44,19 +44,17 @@ class PostProgramFromContactCrudController extends AbstractCrudController
         $choices = array_combine($choices, $choices);
 
         return [
-            BooleanField::new('is_sent', $this->translator->trans('is_sent'))
-                ->setFormTypeOptions([
-                    'data' => $entity->getPostProgram() !== null
-                ]),
-            ChoiceField::new('structure')
+            ChoiceField::new('addressType', "Si oui, indiquer à quelle adresse ce contact reçoit le programme :")
+                ->setChoices([
+                    $this->translator->trans('personal address') => 'personal',
+                    $this->translator->trans('professional address') => 'profesional',
+                ])
+                ->renderExpanded()
+                //->setHelp('Select the address type for sending the program (personal or professional).')
+                ->setRequired(true),
+            ChoiceField::new('structure', "Si adresse professionnelle, indiquer dans quelle structure :")
                 ->setFormTypeOptions([
                     'placeholder' => $this->translator->trans('none'),
-                    'help' => 'Si la structure est déjà destinaire du programme, alors cette dernière ne pourra pas être sélectionnée',
-                    'choice_attr' => function(?Structure $structure) {
-                        $disabled = ($structure?->getPostProgram() !== null);
-                        
-                        return $disabled ? ['disabled' => 'disabled'] : [];
-                    },
                 ])
                 ->setRequired(false)
                 ->setChoices($choices)

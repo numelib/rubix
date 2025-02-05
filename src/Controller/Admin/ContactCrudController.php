@@ -2,60 +2,62 @@
 
 namespace App\Controller\Admin;
 
-use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
-use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
-use App\Controller\Admin\Filter\ContactStructureFilter;
-use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\Contact;
+use App\Entity\Structure;
+use App\Entity\Discipline;
+use App\Entity\PostProgram;
+use App\Entity\ContactDetail;
+use App\Entity\ProgramPosting;
+use Doctrine\ORM\QueryBuilder;
+use App\Form\Admin\ContactDetailType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\FormBuilderInterface;
-use App\Entity\Contact;
-use App\Entity\ContactDetail;
-use App\Entity\Discipline;
-use App\Entity\Structure;
-use App\Form\Admin\ContactDetailType;
-use App\Service\EntitySpreadsheetGenerator;
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\QueryBuilder;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use App\Form\ProgramPostingFromContactType;
+use App\Service\EntitySpreadsheetGenerator;
+use Symfony\Component\HttpFoundation\Response;
+use Doctrine\Common\Collections\ArrayCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use App\Controller\Admin\Filter\HasStructureFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
-use App\Controller\Admin\Filter\HasStructureFilter;
-use App\Controller\Admin\Filter\HasStructureFunctionFilter;
-use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
-use App\Entity\PostProgram;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use App\Controller\Admin\Filter\ContactStructureFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+use App\Controller\Admin\Filter\HasStructureFunctionFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
+use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
 
 class ContactCrudController extends AbstractCrudController
 {
@@ -261,13 +263,6 @@ class ContactCrudController extends AbstractCrudController
                 })
                 ->onlyOnIndex(),
 
-            FormField::addTab($this->translator->trans('post_program'))
-                ->hideOnIndex(),
-            AssociationField::new('postProgram', false)
-                ->renderAsEmbeddedForm(PostProgramFromContactCrudController::class)
-                ->formatValue(fn(?PostProgram $postProgram) => ($postProgram?->getAddress()) ? $this->translator->trans('Sent at') . ' : ' . $postProgram?->getAddress() : $this->translator->trans('Festival program is not sent to this contact'))
-                ->hideOnIndex(),
-
             FormField::addTab('PERSONNEL'),
             FormField::addColumn(6),
             FormField::addFieldset('Général'),
@@ -330,6 +325,18 @@ class ContactCrudController extends AbstractCrudController
                 ->setFormTypeOption('expanded', true)
                 ->hideOnIndex(),
             
+            FormField::addTab($this->translator->trans('post_program'))
+                ->hideOnIndex(),
+                FormField::addColumn(12),
+                
+            BooleanField::new('programSent', 'Ce contact reçoit le programme du festival')->onlyWhenUpdating(),
+            BooleanField::new('programSent', 'Reçoit le programme du festival')->renderAsSwitch(false)->hideOnForm(),
+            
+            AssociationField::new('programPosting', false) // New field to select professional structures
+                ->renderAsEmbeddedForm(ProgramPostingFromContactCrudController::class)
+                ->setRequired(false)
+                ->hideOnIndex()
+                ,  
 
             FormField::addTab('RELATION A L\'ASSOCIATION'),
             BooleanField::new('is_festival_participant', $this->translator->trans('is_festival_participant'))
@@ -441,20 +448,42 @@ class ContactCrudController extends AbstractCrudController
     
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        if(!$entityInstance->getPostProgram()?->getIsSent()){
+        /*if(!$entityInstance->getPostProgram()?->getIsSent()){
             $entityInstance->setPostProgram(null);
-        }
-        
+        }*/
+
+        $this->storeProgramPosting($entityInstance);
+
         parent::persistEntity($entityManager, $entityInstance);
     }
     
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        if(!$entityInstance->getPostProgram()?->getIsSent()){
+        /*if(!$entityInstance->getPostProgram()?->getIsSent()){
             $entityInstance->setPostProgram(null);
-        }
+        }*/
+
+        $this->storeProgramPosting($entityInstance);
 
         parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    public function storeProgramPosting($entity)
+    {
+        if ($entity instanceof Contact) {
+            // Handle program posting logic here, creating a ProgramPosting record
+            if ($entity->getProgramSent()) {
+                $programPosting = $entity->getProgramPosting();
+                $programPosting->setContact($entity);
+                
+                if ($programPosting->getAddressType() === 'personal') {
+                    $programPosting->setStructure(null);
+                }
+                
+            }else{
+                $entity->setProgramPosting(null);
+            }
+        }
     }
 
     public function exportAsXls(BatchActionDto $batchActionDto) : Response

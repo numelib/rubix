@@ -20,7 +20,6 @@ $(document).ready(function () {
         document.getElementById('Contact_disciplines').tomselect.disable();
     }
     
-    
     $profileTypes.on('change', function() {
         var $form = $(this).closest('form');
         var data = {};
@@ -182,8 +181,8 @@ $(document).ready(function () {
     }
 
     {
-        const IS_PROGRAM_SENT_TOGGLE = document.getElementById('Contact_postProgram_is_sent') ?? document.getElementById('Structure_postProgram_is_sent');
-        const POST_PROGRAM_FIELD = document.getElementById('Contact_postProgram_structure') ?? document.getElementById('Structure_postProgram_contact');
+        const IS_PROGRAM_SENT_TOGGLE = document.getElementById('Contact_programSent') ?? document.getElementById('Structure_programSent');
+        const POST_PROGRAM_FIELD = document.getElementById('Contact_programPosting_structure') ?? document.getElementById('Structure_programPosting_contact');
 
         (IS_PROGRAM_SENT_TOGGLE.checked) ? POST_PROGRAM_FIELD.tomselect.enable() : POST_PROGRAM_FIELD.tomselect.disable();
 

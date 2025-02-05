@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\PostProgram;
+use App\Entity\ProgramPosting;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<PostProgram>
+ * @extends ServiceEntityRepository<ProgramPosting>
  */
-class PostProgramRepository extends ServiceEntityRepository
+class ProgramPostingRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, PostProgram::class);
+        parent::__construct($registry, ProgramPosting::class);
     }
 
     //    /**
-    //     * @return PostProgram[] Returns an array of PostProgram objects
+    //     * @return ProgramPosting[] Returns an array of ProgramPosting objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +31,7 @@ class PostProgramRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?PostProgram
+    //    public function findOneBySomeField($value): ?ProgramPosting
     //    {
     //        return $this->createQueryBuilder('p')
     //            ->andWhere('p.exampleField = :val')

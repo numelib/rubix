@@ -87,9 +87,9 @@ class ContactRepository extends ServiceEntityRepository
     public function findAllLeftJoined() : array
     {
         $queryBuilder = $this->createQueryBuilder('contact')
-            ->select('partial contact.{id, firstname, lastname} ', 'partial contact_details.{id, structure_function}', 'postProgram')
+            ->select('partial contact.{id, firstname, lastname} ', 'partial contact_details.{id, structure_function}', 'programPosting')
             ->leftJoin('contact.contact_details', 'contact_details')
-            ->leftJoin('contact.postProgram', 'postProgram');
+            ->leftJoin('contact.programPosting', 'programPosting');
 
         $query = $queryBuilder->getQuery();
         

@@ -27,7 +27,7 @@ address_city : Ville
 address_country : Pays
 personnal_notes : Notes
 contactNewsletters : Envoi newsletter
-is_receiving_festival_program : Envoi programme festival
+is_receiving_festival_program : Reçoit le programme du festival
 festival_program_receipt_email : Email pour envoi du programme
 communication_notes : Notes
 is_festival_participant : Bénévole festival
@@ -109,3 +109,9 @@ is_festival_program_sent: Envoi programme du festival
 
 F: Madame
 M: Monsieur
+
+The structure address: l'adresse de la structure
+The following structure contact(s): contact(s) de la structure
+
+personal address: Adresse personnelle
+professional address: Adresse professionnelle

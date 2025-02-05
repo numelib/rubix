@@ -1,0 +1,14 @@
+{% set programPostings = field.value %}
+
+{% if programPostings|length > 0 %}
+<p>Le programme est à adresser au(x) contact(s) ci-dessous:</p>
+<ul>
+    {% for cp in programPostings %}
+    <li>{{ cp.contact }}</li>
+    {% endfor %}
+</ul>    
+
+{% else %}
+    <p>Le programme n'est pas adressé à une personne en particulier</p>
+
+{% endif %}

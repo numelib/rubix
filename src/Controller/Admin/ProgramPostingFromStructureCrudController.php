@@ -3,15 +3,18 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Contact;
-use App\Entity\PostProgram;
 use App\Entity\Structure;
+use App\Entity\ProgramPosting;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
-class PostProgramFromStructureCrudController extends AbstractCrudController
+class ProgramPostingFromStructureCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly TranslatorInterface $translator,
@@ -20,7 +23,7 @@ class PostProgramFromStructureCrudController extends AbstractCrudController
     
     public static function getEntityFqcn(): string
     {
-        return PostProgram::class;
+        return ProgramPosting::class;
     }
 
     public function configureFields(string $pageName): iterable
@@ -29,31 +32,29 @@ class PostProgramFromStructureCrudController extends AbstractCrudController
 
         if(!($entity instanceof Structure)) return [];
 
-        if($entity->getId() !== null) {
+        /*if($entity->getId() !== null) {
             $choices = $this->entityManager->getRepository(Contact::class)->findByStructure($entity);
         } else {
             $choices = $this->entityManager->getRepository(Contact::class)->findAllLeftJoined();
         }
 
-        $choices = array_combine($choices, $choices);
+        $contacts = [];
+        foreach($choices as $c){
+            $contacts[$c->__toString()] = $c->getId();
+        }*/
 
         return [
-            BooleanField::new('is_sent', $this->translator->trans('is_sent'))
-                ->setFormTypeOptions([
-                    'data' => $entity->getPostProgram() !== null
-                ]),
-            ChoiceField::new('contact')
+            AssociationField::new('contact')
                 ->setFormTypeOptions([
                     'placeholder' => $this->translator->trans('none'),
-                    'help' => 'Si le contact est déjà destinaire du programme, alors ce dernier ne pourra pas être sélectionné',
-                    'choice_attr' => function(?Contact $contact) {
-                        $disabled = ($contact?->getPostProgram() !== null);
-                        
-                        return $disabled ? ['disabled' => 'disabled'] : [];
-                    },
+                    'help' => 'Indiquer le contact à qui adresser le programme',
+                    'choices' => $entity->getContacts()
                 ])
                 ->setRequired(false)
-                ->setChoices($choices)
+                /*->setQueryBuilder(
+                    fn (QueryBuilder $queryBuilder) => $queryBuilder->getEntityManager()->getRepository(Contact::class)->findAllLeftJoined()
+                )*/
+
         ];
     }
 }
