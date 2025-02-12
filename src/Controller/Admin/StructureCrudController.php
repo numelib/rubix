@@ -297,6 +297,7 @@ class StructureCrudController extends AbstractCrudController
                     ],
                 ])
                 ->setHelp("Laisser vide pour envoyer le programme à la structure sans l'adresser à une personne en particulier.")
+                ->addFormTheme('themes/post_program_from_structure.html.twig')
                 , 
             
             CollectionField::new('programPostings', false)
