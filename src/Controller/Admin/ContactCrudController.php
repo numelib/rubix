@@ -355,6 +355,8 @@ class ContactCrudController extends AbstractCrudController
             
             AssociationField::new('programPosting', false) // New field to select professional structures
                 ->renderAsEmbeddedForm(ProgramPostingFromContactCrudController::class)
+                ->setFormTypeOption('attr', ['class' => 'program_posting_fieldset'])
+                ->formatValue(fn(?ProgramPosting $value) => $value?->getSendAt())
                 ->setRequired(false)
                 ->hideOnIndex()
                 ,  

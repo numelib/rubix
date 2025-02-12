@@ -180,14 +180,27 @@ $(document).ready(function () {
         }
     }
 
-    {
-        const IS_PROGRAM_SENT_TOGGLE = document.getElementById('Contact_programSent') ?? document.getElementById('Structure_programSent');
-        const POST_PROGRAM_FIELD = document.getElementById('Contact_programPosting_structure') ?? document.getElementById('Structure_programPosting_contact');
+    if(easyAdminPage.entity === 'Structure') {
+        const IS_PROGRAM_SENT_TOGGLE = document.getElementById('Structure_programSent');
+        const PROGRAM_POSTING_BLOCK = document.querySelector('#tab-programme-du-festival .field-collection.form-group.processed');
 
-        (IS_PROGRAM_SENT_TOGGLE.checked) ? POST_PROGRAM_FIELD.tomselect.enable() : POST_PROGRAM_FIELD.tomselect.disable();
+        (IS_PROGRAM_SENT_TOGGLE?.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none');
 
-        IS_PROGRAM_SENT_TOGGLE.addEventListener('change', function() {
-            (this.checked) ? POST_PROGRAM_FIELD.tomselect.enable() : POST_PROGRAM_FIELD.tomselect.disable()
-        });
+        IS_PROGRAM_SENT_TOGGLE?.addEventListener('change', (ev) => (ev.target.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none'));
+    }
+
+    if(easyAdminPage.entity === 'Contact') {
+        const IS_PROGRAM_SENT_TOGGLE = document.getElementById('Contact_programSent');
+        const PROGRAM_POSTING_BLOCK = document.querySelector('#tab-programme-du-festival .form-fieldset.form-fieldset-no-header');
+
+        const PROGRAM_POSTING_FIELD = document.getElementById('Contact_programPosting_structure');
+        const PROGRAM_POSTING_ADDRESS_FIELD = document.getElementById('Contact_programPosting_addressType');
+        const PROGRAM_POSTING_ADDRESS = PROGRAM_POSTING_ADDRESS_FIELD?.querySelector('input:checked')?.value;
+
+        (PROGRAM_POSTING_ADDRESS === 'personnal') ? PROGRAM_POSTING_FIELD?.tomselect.disable() : PROGRAM_POSTING_FIELD?.tomselect.enable();
+        (IS_PROGRAM_SENT_TOGGLE?.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none');
+
+        PROGRAM_POSTING_ADDRESS_FIELD?.addEventListener('change', (ev) => (ev.target.value === 'personnal') ? PROGRAM_POSTING_FIELD?.tomselect.disable() : PROGRAM_POSTING_FIELD?.tomselect.enable());
+        IS_PROGRAM_SENT_TOGGLE?.addEventListener('change', (ev) => (ev.target.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none'));
     }
 });

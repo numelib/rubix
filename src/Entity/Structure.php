@@ -66,7 +66,7 @@ class Structure
     #[ORM\Column(type: 'boolean')]
     private bool $programSent = false; // Default value
 
-    #[ORM\OneToMany(targetEntity: ProgramPosting::class, mappedBy: 'structure', cascade : ['persist'])]
+    #[ORM\OneToMany(targetEntity: ProgramPosting::class, mappedBy: 'structure', cascade : ['persist', 'remove'])]
     private Collection $programPostings;
 
     /**

@@ -16,7 +16,7 @@ class ProgramPosting
     #[ORM\OneToOne(targetEntity: Contact::class, inversedBy: 'programPosting')]
     private ?Contact $contact = null;
 
-    #[ORM\ManyToOne(targetEntity: Structure::class, inversedBy: 'programPostings', cascade: ['remove'])]
+    #[ORM\ManyToOne(targetEntity: Structure::class, inversedBy: 'programPostings')]
     private ?Structure $structure = null;
 
     #[ORM\Column(type: 'string')]
@@ -68,4 +68,8 @@ class ProgramPosting
         return $this;
     }
 
+    public function getSendAt() : string
+    {
+        return ($this->structure) ? 'A envoyer via sa structure – ' . $this->structure : 'A envoyer via son adresse personnelle';
+    }
 }
