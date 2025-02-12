@@ -270,9 +270,11 @@ class StructureCrudController extends AbstractCrudController
                 ->setFormTypeOptions([
                     'constraints' => [
                         new Callback(function(mixed $value, ExecutionContextInterface $context, mixed $payload) use ($entity) {
-                            if($entity && $value === true && (!$entity->getAddressCity() || !$entity->getAddressCode() || !$entity->getAddressCountry() || !$entity->getAddressStreet())) {
+                            $isAddressComplete = $entity->getAddressCity() && $entity->getAddressCode() && $entity->getAddressCountry() && $entity->getAddressStreet();
+                            
+                            if($entity && $value === true && !$isAddressComplete) {
                                 $context
-                                    ->buildViolation($this->translator->trans('Cannot send festival program to a structure where the address is incomplete'))
+                                    ->buildViolation($this->translator->trans('Structure address is incomplete'))
                                     ->addViolation();
                             }
                         })

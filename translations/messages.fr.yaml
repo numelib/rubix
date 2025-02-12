@@ -117,4 +117,5 @@ personal address: Adresse personnelle
 professional address: Adresse professionnelle
 
 This contact already receive the festival program: Ce contact reçoit déjà le programme du festival
-Cannot send festival program to a structure where the address is incomplete: Impossible d'envoyer le programme du festival à une structure dont l'adresse est incomplète
+Structure address is incomplete: L'adresse de la structure est incomplète
+Contact address is incomplete: L'adresse du contact est incomplète

@@ -58,6 +58,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class ContactCrudController extends AbstractCrudController
 {
@@ -174,6 +176,7 @@ class ContactCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        /** @var \App\Entity\Contact|null */
         $entity = $this->getContext()->getEntity()->getInstance();
 
         return [
@@ -330,7 +333,21 @@ class ContactCrudController extends AbstractCrudController
                 ->hideOnIndex(),
                 FormField::addColumn(12),
                 
-            BooleanField::new('programSent', 'Ce contact reçoit le programme du festival')->onlyWhenUpdating(),
+            BooleanField::new('programSent', 'Ce contact reçoit le programme du festival')
+                ->setFormTypeOptions([
+                    'constraints' => [
+                        new Callback(function(mixed $value, ExecutionContextInterface $context, mixed $payload) use ($entity) {
+                            $isAddressComplete = $entity->getAddressCity() && $entity->getAddressCode() && $entity->getAddressCountry() && $entity->getAddressStreet();
+                            
+                            if($entity && $value === true && $entity->getProgramPosting()?->getAddressType() === 'personnal' && !$isAddressComplete) {
+                                $context
+                                    ->buildViolation($this->translator->trans('Contact address is incomplete'))
+                                    ->addViolation();
+                            }
+                        })
+                    ],
+                ])
+                ->onlyWhenUpdating(),
             BooleanField::new('programSent', 'Reçoit le programme du festival')->renderAsSwitch(false)->hideOnForm(),
             
             AssociationField::new('programPosting', false) // New field to select professional structures
