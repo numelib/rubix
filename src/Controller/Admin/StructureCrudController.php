@@ -106,7 +106,7 @@ class StructureCrudController extends AbstractCrudController
         $filters
             ->add(ChoiceFilter::new('address_code')->setChoices(empty($adressCodesChoices) ? ["Aucun" => 0] : $adressCodesChoices)->setFormTypeOption('value_type_options.multiple', true))
             ->add(ChoiceFilter::new('address_city')->setChoices(empty($adressCitiesChoices) ? ["Aucun" => 0] : $adressCitiesChoices)->setFormTypeOption('value_type_options.multiple', true))
-            ->add('programSent', $this->translator->trans('is_receiving_festival_program'))
+            ->add(BooleanFilter::new('programSent', 'is_receiving_festival_program'))
         ;
 
         $filters
