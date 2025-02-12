@@ -198,9 +198,13 @@ $(document).ready(function () {
         const PROGRAM_POSTING_ADDRESS = PROGRAM_POSTING_ADDRESS_FIELD?.querySelector('input:checked')?.value;
 
         (PROGRAM_POSTING_ADDRESS === 'personnal') ? PROGRAM_POSTING_FIELD?.tomselect.disable() : PROGRAM_POSTING_FIELD?.tomselect.enable();
+        (IS_PROGRAM_SENT_TOGGLE?.checked) ? PROGRAM_POSTING_FIELD?.tomselect.enable() : PROGRAM_POSTING_FIELD?.tomselect.disable();
         (IS_PROGRAM_SENT_TOGGLE?.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none');
 
         PROGRAM_POSTING_ADDRESS_FIELD?.addEventListener('change', (ev) => (ev.target.value === 'personnal') ? PROGRAM_POSTING_FIELD?.tomselect.disable() : PROGRAM_POSTING_FIELD?.tomselect.enable());
-        IS_PROGRAM_SENT_TOGGLE?.addEventListener('change', (ev) => (ev.target.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none'));
+        IS_PROGRAM_SENT_TOGGLE?.addEventListener('change', (ev) => {
+            (ev.target.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none');
+            (ev.target?.checked) ? PROGRAM_POSTING_FIELD?.tomselect.enable() : PROGRAM_POSTING_FIELD?.tomselect.disable();
+        });
     }
 });

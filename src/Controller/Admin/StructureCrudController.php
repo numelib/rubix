@@ -269,19 +269,19 @@ class StructureCrudController extends AbstractCrudController
             ,
 
             BooleanField::new('programSent', 'Cette structure reçoit le programme du festival')
-                // ->setFormTypeOptions([
-                //     'constraints' => [
-                //         new Callback(function(mixed $value, ExecutionContextInterface $context, mixed $payload) use ($entity) {
-                //             $isAddressComplete = $entity->getAddressCity() && $entity->getAddressCode() && $entity->getAddressCountry() && $entity->getAddressStreet();
+                ->setFormTypeOptions([
+                    'constraints' => [
+                        new Callback(function(mixed $value, ExecutionContextInterface $context, mixed $payload) use ($entity) {
+                            $isAddressComplete = $entity->getAddressCity() && $entity->getAddressCode() && $entity->getAddressCountry() && $entity->getAddressStreet();
                             
-                //             if($entity && $value === true && !$isAddressComplete) {
-                //                 $context
-                //                     ->buildViolation($this->translator->trans('Structure address is incomplete'))
-                //                     ->addViolation();
-                //             }
-                //         })
-                //     ],
-                // ])
+                            if($entity && $value === true && !$isAddressComplete) {
+                                $context
+                                    ->buildViolation($this->translator->trans('Structure address is incomplete'))
+                                    ->addViolation();
+                            }
+                        })
+                    ],
+                ])
                 ->onlyWhenUpdating(),
             BooleanField::new('programSent', 'Reçoit le programme du festival')->renderAsSwitch(false)->hideOnForm(),
 
