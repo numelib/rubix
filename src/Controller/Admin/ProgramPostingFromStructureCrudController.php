@@ -7,12 +7,15 @@ use App\Entity\Structure;
 use App\Entity\ProgramPosting;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\HiddenField;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 class ProgramPostingFromStructureCrudController extends AbstractCrudController
 {

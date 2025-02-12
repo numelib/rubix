@@ -356,17 +356,6 @@ class StructureCrudController extends AbstractCrudController
                 $event->getForm()->getParent()?->add('structure_type_specializations', EntityType::class, $options);
             }
         );
-
-        // $builder->get('postProgram')->addEventListener(
-        //     FormEvents::POST_SUBMIT,
-        //     function (FormEvent $event): void {
-        //         $isSent = $event->getForm()->get('is_sent')->getData();
-        //         $postProgram = $event->getData();
-
-        //         if(!$isSent) {
-        //         }
-        //     }
-        // );
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void

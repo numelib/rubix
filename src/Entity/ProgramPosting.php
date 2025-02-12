@@ -29,7 +29,7 @@ class ProgramPosting
 
     public function __toString()
     {
-        return $this->getContact();
+        return $this->getContact() ?? $this->getStructure();
     }
 
     public function getAddressType(): ?string

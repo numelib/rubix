@@ -604,6 +604,12 @@ class Structure
     public function addProgramPosting(ProgramPosting $programPosting): static
     {
         if (!$this->programPostings->contains($programPosting)) {
+            if($contact = $programPosting?->getContact()) {
+                $contact->setProgramSent(true);
+            }
+
+            $programPosting->setAddressType('professional');
+                
             $this->programPostings->add($programPosting);
             $programPosting->setStructure($this);
         }
@@ -617,6 +623,7 @@ class Structure
             // set the owning side to null (unless already changed)
             if ($programPosting->getStructure() === $this) {
                 $programPosting->setStructure(null);
+                $programPosting->setContact(null);
             }
         }
 
