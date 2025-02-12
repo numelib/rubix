@@ -54,6 +54,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class StructureCrudController extends AbstractCrudController
 {
@@ -133,6 +135,7 @@ class StructureCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        /** @var \App\Entity\Structure|null */
         $entity = $this->getContext()->getEntity()->getInstance();
         $structureRepository = $this->entityManager->getRepository(Structure::class);
 
@@ -263,7 +266,19 @@ class StructureCrudController extends AbstractCrudController
                 ->hideWhenCreating()
             ,
 
-            BooleanField::new('programSent', 'Cette structure reçoit le programme du festival')->onlyWhenUpdating(),
+            BooleanField::new('programSent', 'Cette structure reçoit le programme du festival')
+                ->setFormTypeOptions([
+                    'constraints' => [
+                        new Callback(function(mixed $value, ExecutionContextInterface $context, mixed $payload) use ($entity) {
+                            if($entity && $value === true && (!$entity->getAddressCity() || !$entity->getAddressCode() || !$entity->getAddressCountry() || !$entity->getAddressStreet())) {
+                                $context
+                                    ->buildViolation($this->translator->trans('Cannot send festival program to a structure where the address is incomplete'))
+                                    ->addViolation();
+                            }
+                        })
+                    ],
+                ])
+                ->onlyWhenUpdating(),
             BooleanField::new('programSent', 'Reçoit le programme du festival')->renderAsSwitch(false)->hideOnForm(),
 
             CollectionField::new('programPostings', "Si oui, adresser le programme à :")
