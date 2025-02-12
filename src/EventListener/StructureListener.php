@@ -32,9 +32,7 @@ class StructureListener
         foreach($structure?->getProgramPostings() as $programPosting) 
         {
             $programPosting->getContact()?->setProgramSent(false);
-            $programPosting->setContact(null);
-            $programPosting->setStructure(null);
-            $this->entityManager->persist($programPosting);
+            $this->entityManager->remove($programPosting);
             $this->entityManager->flush();
         }
     }
