@@ -58,6 +58,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -161,9 +162,11 @@ class ContactCrudController extends AbstractCrudController
             ->setFormTypeOption('value_type_options.choice_label', fn($choice, string $key, mixed $value): string => $value)
         );
 
-        $filters->add(
-            IsReceivingFestivalProgramFilter::new('postProgram', BooleanFilterType::class, [], $this->translator->trans('is_receiving_festival_program'))
-        );
+        $filters->add(BooleanFilter::new('programSent', 'is_receiving_festival_program'));
+
+        // $filters->add(
+        //     IsReceivingFestivalProgramFilter::new('postProgram', BooleanFilterType::class, [], $this->translator->trans('is_receiving_festival_program'))
+        // );
 
         $filters
             ->add('newsletter_types')
