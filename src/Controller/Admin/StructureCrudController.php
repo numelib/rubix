@@ -53,6 +53,7 @@ use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 class StructureCrudController extends AbstractCrudController
 {
@@ -269,6 +270,13 @@ class StructureCrudController extends AbstractCrudController
                 ->useEntryCrudForm(ProgramPostingFromStructureCrudController::class)
                 ->setRequired(false)
                 ->onlyWhenUpdating()
+                ->setFormTypeOptions([
+                    'entry_options' => [
+                        'constraints' => [
+                            new UniqueEntity('contact', $this->translator->trans('This contact already receive the festival program')),
+                        ],
+                    ],
+                ])
                 ->setHelp("Laisser vide pour envoyer le programme à la structure sans l'adresser à une personne en particulier.")
                 , 
             
