@@ -647,4 +647,18 @@ class Structure
         return $this;
     }
 
+    public function getProgramPostingContacts(): ?string
+    {
+        $contacts = [];
+
+        if($this->getProgramSent() && count($this->getProgramPostings())>0){
+            foreach($this->getProgramPostings() as $pp)
+            {
+                $contacts[] = $pp->getContact();
+            }
+        }
+
+        return count($contacts)>0 ? implode('\n', $contacts) : null;
+    }
+
 }

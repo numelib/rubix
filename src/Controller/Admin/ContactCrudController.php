@@ -91,17 +91,17 @@ class ContactCrudController extends AbstractCrudController
         return $crud;
     }
 
-    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    /*public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
-        // $queryBuilder
-        //     ->leftJoin('entity.contact_details', 'contact_details')
-        //     ->leftJoin('contact_details.structure', 'structure')
-        // ;
+        $queryBuilder
+             ->leftJoin('entity.contact_details', 'contact_details')
+             ->leftJoin('contact_details.structure', 'structure')
+        ;
         
         return $queryBuilder;
-    }
+    }*/
 
     public function configureActions(Actions $actions): Actions
     {
@@ -256,7 +256,7 @@ class ContactCrudController extends AbstractCrudController
             Field::new('structures_functions', $this->translator->trans('structure_functions'))
                 ->formatValue(fn(ArrayCollection $structuresFunctions) => implode(', ', $structuresFunctions->toArray()))
                 ->onlyOnIndex(),
-            Field::new('formatted_structures', $this->translator->trans('structures'))
+            /*Field::new('formatted_structures', $this->translator->trans('structures'))
                 ->formatValue(function(ArrayCollection $structures)  {
                     $anchor = '<a href="">';
                     $structures = array_map(function(Structure $structure) {
@@ -268,14 +268,25 @@ class ContactCrudController extends AbstractCrudController
                     }, $structures->toArray());
                     return implode(', ', $structures);
                 })
-                ->onlyOnIndex(),
+                ->onlyOnIndex(),*/
+
+            AssociationField::new('contact_details', $this->translator->trans('structures'))
+                    ->setTemplatePath('admin/fields/contact_structures.html.twig')
+                    ->setTextAlign('left')
+                    //->setSortable(true) -> TODO: sort by Structure name
+                    ->setQueryBuilder(function ($queryBuilder) {
+                        // Tri personalisé ici
+                        return $queryBuilder->orderBy('structure.name', 'ASC');
+                    })
+                    ->onlyOnIndex()
+            ,
 
             FormField::addTab('PERSONNEL'),
             FormField::addColumn(6),
             FormField::addFieldset('Général'),
-            EmailField::new('personnal_email', $this->translator->trans('personnal_email'))
+            EmailField::new('personal_email', $this->translator->trans('personal_email'))
                 ->hideOnIndex(),
-            TelephoneField::new('personnal_phone_number', $this->translator->trans('personnal_phone_number'))
+            TelephoneField::new('personal_phone_number', $this->translator->trans('personal_phone_number'))
                 ->setFormType(PhoneNumberType::class)
                 ->setFormTypeOptions([
                     'widget' => PhoneNumberType::WIDGET_COUNTRY_CHOICE,
@@ -288,9 +299,9 @@ class ContactCrudController extends AbstractCrudController
                     ],
                 ])
                 ->hideOnIndex(),
-            TextEditorField::new('personnal_notes', $this->translator->trans('personnal_notes'))
+            TextEditorField::new('personal_notes', $this->translator->trans('personal_notes'))
                 ->onlyOnForms(),
-            TextField::new('personnal_notes', $this->translator->trans('professional_notes'))
+            TextField::new('personal_notes', $this->translator->trans('professional_notes'))
                 ->renderAsHtml()
                 ->onlyOnDetail(),
 
@@ -342,7 +353,7 @@ class ContactCrudController extends AbstractCrudController
                         new Callback(function(mixed $value, ExecutionContextInterface $context, mixed $payload) use ($entity) {
                             $isAddressComplete = $entity->getAddressCity() && $entity->getAddressCode() && $entity->getAddressCountry() && $entity->getAddressStreet();
                             
-                            if($entity && $value === true && $entity->getProgramPosting()?->getAddressType() === 'personnal' && !$isAddressComplete) {
+                            if($entity && $value === true && $entity->getProgramPosting()?->getAddressType() === 'personal' && !$isAddressComplete) {
                                 $context
                                     ->buildViolation($this->translator->trans('Contact address is incomplete'))
                                     ->addViolation();
@@ -356,7 +367,7 @@ class ContactCrudController extends AbstractCrudController
             AssociationField::new('programPosting', false) // New field to select professional structures
                 ->renderAsEmbeddedForm(ProgramPostingFromContactCrudController::class)
                 ->setFormTypeOption('attr', ['class' => 'program_posting_fieldset'])
-                ->formatValue(fn(?ProgramPosting $value) => $value?->getSendAt())
+                ->formatValue(fn(?ProgramPosting $value) => $value?->getSendThrough())
                 ->setRequired(false)
                 ->hideOnIndex()
                 ,  
@@ -527,8 +538,8 @@ class ContactCrudController extends AbstractCrudController
             'is_workshop_artist',
             'formationParticipantTypes',
             'is_formation_speaker',
-            'personnal_email',
-            'personnal_phone_number',
+            'personal_email',
+            'personal_phone_number',
             'address_street',
             'address_adition',
             'address_code',
@@ -536,6 +547,7 @@ class ContactCrudController extends AbstractCrudController
             'address_country',
             'newsletter_email',
             'newsletter_types',
+            'program_sent',
             'post_program_address',
             'is_festival_participant',
             'is_board_of_directors_member',

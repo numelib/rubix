@@ -20,7 +20,7 @@ class ContactRepository extends ServiceEntityRepository
     public function findEmails() : array
     {
         return $this->createQueryBuilder('c')
-            ->select('c.personnal_email, cd.email')
+            ->select('c.personal_email, cd.email')
             ->leftJoin('c.contact_details','cd')
             ->getQuery()
             ->getResult();

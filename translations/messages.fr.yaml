@@ -107,6 +107,8 @@ Festival programs: Programmes festival
 festival_program: Programme du festival
 is_festival_program_sent: Envoi programme du festival
 
+program_sent: Reçoit le programme du festival
+
 F: Madame
 M: Monsieur
 
@@ -120,3 +122,5 @@ This contact already receive the festival program: Ce contact reçoit déjà le 
 Structure address is incomplete: L'adresse de la structure est incomplète
 Contact address is incomplete: L'adresse du contact est incomplète
 Add new contact: Ajouter un nouveau contact
+
+post_program_contacts: Programme à adresser au(x) contact(s)

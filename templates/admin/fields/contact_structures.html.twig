@@ -1,0 +1,20 @@
+{% set contactDetails = field.value %}
+
+{% if contactDetails|length > 0 %}
+<ul class="list-unstyled text-start">
+{% for contactDetail in contactDetails %}
+
+    <li>
+        {% if contactDetail.structure %}
+            {% set url = ea_url().setController('App\\Controller\\Admin\\StructureCrudController')
+                      .setEntityId(contactDetail.structure.id)
+                      .setAction('detail')
+            %}
+        <a href="{{ url }}" target="_blank">{{ contactDetail.structure }}</a>
+        {% else %}
+            {{ contactDetail.structure }}
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% endif %}

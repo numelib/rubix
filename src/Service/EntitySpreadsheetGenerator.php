@@ -105,11 +105,18 @@ class EntitySpreadsheetGenerator
                         if($cell['value'] === $replacement['value']) $cell['value'] = $replacement['defaultsTo'];
                     }
                 } else {
-                    if($entity instanceof Structure && $field === 'post_program_address') {
+                    if($entity instanceof Structure && $field === 'post_program_contacts') {
                         $structure = $entity;
-                        $address = $structure?->getPostProgram()?->getAddress();
-                        $cell['value'] = ($address !== null) ? $address : 'Aucun(e)';
+                        $contacts = $structure?->getProgramPostingContacts();
+                        $cell['value'] = ($contacts !== null) ? str_replace('\n', PHP_EOL, $contacts) : 'Aucun(e)';
+                        $spreadsheet->getActiveSheet()->getStyle($cell['position'])->getAlignment()->setWrapText(true);
                     }
+
+                    /*if($field === 'post_program_address') {
+                        $address = $contact?->getProgramPostingAddress();    
+                        $cell['value'] = ($address !== null) ? $address : 'Aucun.e';
+                        $spreadsheet->getActiveSheet()->getStyle($cell['position'])->getAlignment()->setWrapText(true);
+                    }*/
                 }
 
                 $spreadsheet->getActiveSheet()->setCellValue($cell['position'], $cell['value']);
@@ -167,7 +174,7 @@ class EntitySpreadsheetGenerator
                             $cell['value'] = $this->translator->trans($cell['value']);
                         }
 
-                        if($field === 'personnal_phone_number' && $cell['value'] instanceof PhoneNumber) {
+                        if($field === 'personal_phone_number' && $cell['value'] instanceof PhoneNumber) {
                             $cell['value'] = '+' . $cell['value']->getCountryCode() . $cell['value']->getNationalNumber();
                             
                             $spreadsheet->getActiveSheet()->setCellValueExplicit($cell['position'], $cell['value'], DataType::TYPE_STRING);
@@ -193,10 +200,19 @@ class EntitySpreadsheetGenerator
 
                             continue;
                         }
+
+                        if($field === 'program_sent') {
+                            if($contact->getProgramSent() && $contact->getProgramPosting()){
+                                $cell['value'] = $contact->getProgramPosting()->getSendThrough();
+                            }
+                        }
+
                     } else {
+                        
                         if($field === 'post_program_address') {
-                            $address = $contact?->getPostProgram()?->getAddress();
+                            $address = $contact?->getProgramPostingAddress();    
                             $cell['value'] = ($address !== null) ? $address : 'Aucun.e';
+                            $spreadsheet->getActiveSheet()->getStyle($cell['position'])->getAlignment()->setWrapText(true);
                         }
 
                         if($contactDetails->count() > 0) {
@@ -234,13 +250,14 @@ class EntitySpreadsheetGenerator
 
                     $spreadsheet->getActiveSheet()->setCellValue($cell['position'], $cell['value']);
                     $spreadsheet->getActiveSheet()->getColumnDimension($cell['column'])->setAutoSize(true);
-            
+                            
                     $cell['column']++;
                     
                 }
                 $cell['row']++;
             }
         }
+
 
         return $spreadsheet;
     }

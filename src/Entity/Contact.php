@@ -43,17 +43,17 @@ class Contact
     private ?bool $is_formation_speaker = null;
 
     #[ORM\Column(length: 500, type: "text", nullable: true)]
-    private ?string $personnal_notes = null;
+    private ?string $personal_notes = null;
 
     #[ORM\Column(length: 500, type: "text", nullable: true)]
     private ?string $professional_notes = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $personnal_email = null;
+    private ?string $personal_email = null;
 
     #[AssertPhoneNumber()]
     #[ORM\Column(type: 'phone_number', nullable: true)]
-    private ?PhoneNumber $personnal_phone_number = null;
+    private ?PhoneNumber $personal_phone_number = null;
 
     #[ORM\Column(length: 500, type: "text", nullable: true)]
     private ?string $communication_notes = null;
@@ -240,14 +240,14 @@ class Contact
         return $this;
     }
 
-    public function getPersonnalNotes(): ?string
+    public function getpersonalNotes(): ?string
     {
-        return $this->personnal_notes;
+        return $this->personal_notes;
     }
 
-    public function setPersonnalNotes(?string $personnal_notes): static
+    public function setpersonalNotes(?string $personal_notes): static
     {
-        $this->personnal_notes = $personnal_notes;
+        $this->personal_notes = $personal_notes;
 
         return $this;
     }
@@ -264,26 +264,26 @@ class Contact
         return $this;
     }
 
-    public function getPersonnalEmail(): ?string
+    public function getpersonalEmail(): ?string
     {
-        return $this->personnal_email;
+        return $this->personal_email;
     }
 
-    public function setPersonnalEmail(?string $personnal_email): static
+    public function setpersonalEmail(?string $personal_email): static
     {
-        $this->personnal_email = $personnal_email;
+        $this->personal_email = $personal_email;
 
         return $this;
     }
 
-    public function getPersonnalPhoneNumber(): ?PhoneNumber
+    public function getpersonalPhoneNumber(): ?PhoneNumber
     {
-        return $this->personnal_phone_number;
+        return $this->personal_phone_number;
     }
 
-    public function setPersonnalPhoneNumber(?PhoneNumber $personnal_phone_number): static
+    public function setpersonalPhoneNumber(?PhoneNumber $personal_phone_number): static
     {
-        $this->personnal_phone_number = $personnal_phone_number;
+        $this->personal_phone_number = $personal_phone_number;
 
         return $this;
     }
@@ -730,6 +730,21 @@ class Contact
         $this->programPosting = $programPosting;
 
         return $this;
+    }
+
+    public function getProgramPostingAddress(): ?string
+    {
+        $address = null;
+
+        if($this->getProgramSent() && $this->getProgramPosting()){
+            if($this->getProgramPosting()->getAddressType() === 'personal'){
+                $address = str_replace('<br>', PHP_EOL, $this->getFormattedAddress());
+            }else{
+                $address = PHP_EOL.str_replace('<br>', PHP_EOL, $this->getProgramPosting()->getStructure()->__toString().'<br>'.$this->getProgramPosting()->getStructure()->getFormattedAddress());
+            }
+        }
+
+        return $address;
     }
 
 }

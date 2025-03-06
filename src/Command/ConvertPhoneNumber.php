@@ -29,10 +29,10 @@ class ConvertPhoneNumber extends Command
         // L'ordre d'execution est important !
 
         $this->weirdPhoneNumbersToNull($connection, 'structure', 'phone_number');
-        $this->weirdPhoneNumbersToNull($connection, 'contact', 'personnal_phone_number');
+        $this->weirdPhoneNumbersToNull($connection, 'contact', 'personal_phone_number');
         $this->weirdPhoneNumbersToNull($connection, 'contact_detail_phone_number', 'phone_number');
 
-        $this->updateContactPersonnalPhoneFormat($connection);
+        $this->updateContactpersonalPhoneFormat($connection);
         $this->updateContactDetailPhoneNumberFormat($connection);
         $this->updateStructurePhoneNumberFormat($connection);
 
@@ -110,17 +110,17 @@ class ConvertPhoneNumber extends Command
     }
 
     /**
-     * Modifie le format des numéros de téléphone des contacts existants (personnal_phone_number)
+     * Modifie le format des numéros de téléphone des contacts existants (personal_phone_number)
      * pour qu'ils respectent la norme E.164
      */
-    private function updateContactPersonnalPhoneFormat(Connection $connection) : void
+    private function updateContactpersonalPhoneFormat(Connection $connection) : void
     {
         $sql = "
-            UPDATE `contact` SET `personnal_phone_number` = CASE
-                WHEN `personnal_phone_number` NOT LIKE '+%' THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT('+33', `personnal_phone_number`), ' ', ''), '.', ''), ' ', ''), BINARY '‭', ''), BINARY '‬', '')
-                ELSE REPLACE(`personnal_phone_number`, ' ', '')
+            UPDATE `contact` SET `personal_phone_number` = CASE
+                WHEN `personal_phone_number` NOT LIKE '+%' THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT('+33', `personal_phone_number`), ' ', ''), '.', ''), ' ', ''), BINARY '‭', ''), BINARY '‬', '')
+                ELSE REPLACE(`personal_phone_number`, ' ', '')
             END
-            WHERE `personnal_phone_number` IS NOT NULL;
+            WHERE `personal_phone_number` IS NOT NULL;
         ";
 
         $connection->executeQuery($sql);

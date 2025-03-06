@@ -31,17 +31,16 @@
         {% for structure in contact.structures %}
             <div class="card">
                 <div class="card__header">
-                    <p class="card__title">{{ contact.lastname|upper }} {{ contact.firstname }}</p>
+                    <p class="card__title">{{ contact.civility }} {{ contact.firstname }} {{ contact.lastname|upper }}</p>
                 </div>
                 <div class="card__body">
-                    <p>{{ contact.postProgram != null ? contact.postProgram.simpleAddress : 'Aucun(e)' }}</p>
                     <p>{{ structure.name }}</p>
                     <p>{{ structure.addressStreet == null ? 'Rue inconnue' : structure.addressStreet }}</p>
                     <p>
-                        {{ (structure.addressCity != null) ? structure.addressCity : 'Ville inconnue' }}
                         {{ (structure.addressCity != null and structure.addressCode != null and structure.addressCode != 0) ? structure.addressCode : 'Code postal inconnu'}}
+                        {{ (structure.addressCity != null) ? structure.addressCity : 'Ville inconnue' }}
                     </p>
-                    <p>{{ (structure.addressCountry != null) ? structure.addressCountry : 'Pays inconnu' }}</p>
+                    <p>{{ (structure.addressCountry != null) ? structure.addressCountry|country_name(app.locale) : 'Pays inconnu' }}</p>
                 </div>
             </div>
         {% endfor %}

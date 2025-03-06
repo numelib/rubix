@@ -286,14 +286,14 @@ class ExcelImportCommand extends Command
                 'Artiste ateliers' => 'is_workshop_artist',
                 'Intervenant de formation' => 'is_formation_speaker',
                 'Notes professionnelles' => 'professional_notes',
-                'Email personnel' => 'personnal_email',
-                'Numéro de téléphone personnel' => 'personnal_phone_number',
+                'Email personnel' => 'personal_email',
+                'Numéro de téléphone personnel' => 'personal_phone_number',
                 'Rue' => 'address_street',
                 'Complément d’adresse' => 'address_adition',
                 'Code postal' => 'address_code',
                 'Ville' => 'address_city',
                 'Pays' => 'address_country',
-                'Notes personnelles' => 'personnal_notes',
+                'Notes personnelles' => 'personal_notes',
                 'Mail de réception' => 'newsletter_email',
                 'Envoi programme festival' => 'is_receiving_festival_program',
                 'Bénévole au festival' => 'is_festival_participant',
@@ -318,7 +318,7 @@ class ExcelImportCommand extends Command
                     if(count($numbers) > 1) throw new Exception('Contact should not have mutliple phone numbers : ' . implode(', ', $numbers));
                     foreach($numbers as $number)
                     {
-                        $contact->setPersonnalPhoneNumber($number);
+                        $contact->setpersonalPhoneNumber($number);
                     }
                     break;
                 case str_starts_with($colHeader, 'Email') : 

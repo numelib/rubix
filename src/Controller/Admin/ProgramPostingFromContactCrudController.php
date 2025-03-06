@@ -46,7 +46,7 @@ class ProgramPostingFromContactCrudController extends AbstractCrudController
         return [
             ChoiceField::new('addressType', "Si oui, indiquer à quelle adresse ce contact reçoit le programme :")
                 ->setChoices([
-                    $this->translator->trans('personal address') => 'personnal',
+                    $this->translator->trans('personal address') => 'personal',
                     $this->translator->trans('professional address') => 'professional',
                 ])
                 ->renderExpanded()

@@ -68,8 +68,9 @@ class ProgramPosting
         return $this;
     }
 
-    public function getSendAt() : string
+    public function getSendThrough() : string
     {
         return ($this->structure) ? 'A envoyer via sa structure – ' . $this->structure : 'A envoyer via son adresse personnelle';
     }
+
 }
