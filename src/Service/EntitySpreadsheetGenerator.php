@@ -111,12 +111,6 @@ class EntitySpreadsheetGenerator
                         $cell['value'] = ($contacts !== null) ? str_replace('\n', PHP_EOL, $contacts) : 'Aucun(e)';
                         $spreadsheet->getActiveSheet()->getStyle($cell['position'])->getAlignment()->setWrapText(true);
                     }
-
-                    /*if($field === 'post_program_address') {
-                        $address = $contact?->getProgramPostingAddress();    
-                        $cell['value'] = ($address !== null) ? $address : 'Aucun.e';
-                        $spreadsheet->getActiveSheet()->getStyle($cell['position'])->getAlignment()->setWrapText(true);
-                    }*/
                 }
 
                 $spreadsheet->getActiveSheet()->setCellValue($cell['position'], $cell['value']);

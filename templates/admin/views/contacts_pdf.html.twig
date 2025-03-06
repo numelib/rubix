@@ -31,7 +31,7 @@
         {% for structure in contact.structures %}
             <div class="card">
                 <div class="card__header">
-                    <p class="card__title">{{ contact.civility }} {{ contact.firstname }} {{ contact.lastname|upper }}</p>
+                    <p class="card__title">{{ contact.civility|trans }} {{ contact.firstname }} {{ contact.lastname|upper }}</p>
                 </div>
                 <div class="card__body">
                     <p>{{ structure.name }}</p>

@@ -34,6 +34,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
+use Symfony\Component\Validator\Constraints\Callback;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -46,6 +47,8 @@ use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use App\Controller\Admin\Filter\HasStructureFunctionFilter;
@@ -54,13 +57,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
-use Symfony\Component\Validator\Constraints\Callback;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class ContactCrudController extends AbstractCrudController
 {
@@ -106,6 +107,19 @@ class ContactCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         $createAndInspectActionName = 'createAndInspect';
+
+        $exportXlsBtn = Action::new('exportAllAsXls', 'Export XLS', 'fa-regular fa-file-excel')
+            ->addCssClass('btn-success text-white')
+            ->linkToCrudAction('exportAllAsXls')
+            ->createAsGlobalAction()
+        ;
+
+        $exportPdfBtn = Action::new('exportAllAsPdf', 'Export PDF', 'fa-solid fa-file-pdf')
+            ->addCssClass('btn-success text-white')
+            ->linkToCrudAction('exportAllAsPdf')
+            ->createAsGlobalAction()
+        ;
+
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_NEW, Action::new($createAndInspectActionName)
@@ -116,6 +130,8 @@ class ContactCrudController extends AbstractCrudController
                 ->linkToCrudAction(Action::NEW)
                 ->setLabel($this->translator->trans('Create and inspect'))
             )
+            ->add(Crud::PAGE_INDEX, $exportXlsBtn)
+            ->add(Crud::PAGE_INDEX, $exportPdfBtn)
             ->addBatchAction(Action::new('xlsExport', 'Export XLS')
                 ->linkToCrudAction('exportAsXls')
                 ->addCssClass('btn btn-primary')
@@ -163,10 +179,6 @@ class ContactCrudController extends AbstractCrudController
         );
 
         $filters->add(BooleanFilter::new('programSent', 'is_receiving_festival_program'));
-
-        // $filters->add(
-        //     IsReceivingFestivalProgramFilter::new('postProgram', BooleanFilterType::class, [], $this->translator->trans('is_receiving_festival_program'))
-        // );
 
         $filters
             ->add('newsletter_types')
@@ -465,27 +477,11 @@ class ContactCrudController extends AbstractCrudController
             }
         );
 
-        /*$builder->get('postProgram')->addEventListener(
-            FormEvents::POST_SUBMIT,
-            function (FormEvent $event): void {
-                $isSent = $event->getForm()->get('is_sent')->getData();
-                $postProgram = $event->getData();
-
-                if(!$isSent) {
-                    $this->entityManager->remove($postProgram);
-                    $this->entityManager->flush();
-                }
-            }
-        );*/
     }
 
     
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        /*if(!$entityInstance->getPostProgram()?->getIsSent()){
-            $entityInstance->setPostProgram(null);
-        }*/
-
         $this->storeProgramPosting($entityInstance);
 
         parent::persistEntity($entityManager, $entityInstance);
@@ -493,9 +489,6 @@ class ContactCrudController extends AbstractCrudController
     
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        /*if(!$entityInstance->getPostProgram()?->getIsSent()){
-            $entityInstance->setPostProgram(null);
-        }*/
 
         $this->storeProgramPosting($entityInstance);
 
@@ -520,11 +513,30 @@ class ContactCrudController extends AbstractCrudController
         }
     }
 
+    public function exportAllAsXls(AdminContext $context)
+    {
+        $sort_fields = FieldCollection::new($this->configureFields(Crud::PAGE_INDEX));
+        $filters = $this->container->get(FilterFactory::class)->create($context->getCrud()->getFiltersConfig(), $sort_fields, $context->getEntity());
+        $queryBuilder = $this->createIndexQueryBuilder($context->getSearch(), $context->getEntity(), $sort_fields, $filters);
+        $entities = $queryBuilder->getQuery()->getResult();
+
+        return $this->generateXlsExport($entities);
+    }
+
     public function exportAsXls(BatchActionDto $batchActionDto) : Response
     {
         $className = $batchActionDto->getEntityFqcn();
         $entityManager = $this->container->get('doctrine')->getManagerForClass($className);
 
+        $entities = array_map(function($id) use ($className, $entityManager) {
+            return $entityManager->find($className, $id);
+        }, $batchActionDto->getEntityIds());
+
+        return $this->generateXlsExport($entities);
+    }
+
+    public function generateXlsExport($entities)
+    {
         $fields =  [
             'civility',
             'firstname',
@@ -577,10 +589,6 @@ class ContactCrudController extends AbstractCrudController
             ],
         ];
 
-        $entities = array_map(function($id) use ($className, $entityManager) {
-            return $entityManager->find($className, $id);
-        }, $batchActionDto->getEntityIds());
-
         $spreadsheet = $this->entitySpreadsheetGenerator
             ->setValueReplacements($replacements)
             ->setWorksheetTitle('Contacts')
@@ -599,6 +607,19 @@ class ContactCrudController extends AbstractCrudController
                 'Content-Disposition' => 'attachment; filename="Export - Contacts.xls"',
             )
         );
+    }
+
+    public function exportAllAsPdf(AdminContext $context, DompdfWrapperInterface $domPdfWrapper)
+    {
+        $sort_fields = FieldCollection::new($this->configureFields(Crud::PAGE_INDEX));
+        $filters = $this->container->get(FilterFactory::class)->create($context->getCrud()->getFiltersConfig(), $sort_fields, $context->getEntity());
+        $queryBuilder = $this->createIndexQueryBuilder($context->getSearch(), $context->getEntity(), $sort_fields, $filters);
+        $entities = $queryBuilder->getQuery()->getResult();
+
+        $html = $this->renderView('admin/views/contacts_pdf.html.twig', ['contacts' => $entities]);
+
+        $response = $domPdfWrapper->getStreamResponse($html, "document.pdf");
+        $response->send();
     }
 
     public function exportAsPdf(BatchActionDto $batchActionDto, DompdfWrapperInterface $domPdfWrapper) : void

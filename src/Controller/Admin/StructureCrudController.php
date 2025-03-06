@@ -14,7 +14,6 @@ use Doctrine\Common\Collections\Criteria;
 use App\Entity\StructureTypeSpecialization;
 use App\Service\EntitySpreadsheetGenerator;
 use App\Form\Admin\StructurePhoneNumberType;
-use App\Form\Admin\ProgramPostingFromStructureType;
 use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
@@ -23,14 +22,17 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use App\Form\Admin\ProgramPostingFromStructureType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use Symfony\Component\Validator\Constraints\Unique;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
+use Symfony\Component\Validator\Constraints\Callback;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -38,26 +40,25 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use Symfony\Component\Validator\Constraints\Collection;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Validator\Constraints\Callback;
-use Symfony\Component\Validator\Constraints\Collection;
-use Symfony\Component\Validator\Constraints\Unique;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
 
 class StructureCrudController extends AbstractCrudController
 {
@@ -75,8 +76,15 @@ class StructureCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $exportXlsBtn = Action::new('exportAllAsXls', 'Export XLS', 'fa-regular fa-file-excel')
+            ->addCssClass('btn-success text-white')
+            ->linkToCrudAction('exportAllAsXls')
+            ->createAsGlobalAction()
+        ;
+
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $exportXlsBtn)
             ->addBatchAction(Action::new('xlsExport', 'Export XLS')
                 ->linkToCrudAction('exportAsXls')
                 ->addCssClass('btn btn-primary')
@@ -433,11 +441,31 @@ class StructureCrudController extends AbstractCrudController
         return parent::getRedirectResponseAfterSave($context, $action);
     }
 
+    public function exportAllAsXls(AdminContext $context)
+    {
+        $sort_fields = FieldCollection::new($this->configureFields(Crud::PAGE_INDEX));
+        $filters = $this->container->get(FilterFactory::class)->create($context->getCrud()->getFiltersConfig(), $sort_fields, $context->getEntity());
+        $queryBuilder = $this->createIndexQueryBuilder($context->getSearch(), $context->getEntity(), $sort_fields, $filters);
+        $entities = $queryBuilder->getQuery()->getResult();
+
+        return $this->generateXlsExport($entities);
+    }
+
     public function exportAsXls(BatchActionDto $batchActionDto) : Response
     {
         $className = $batchActionDto->getEntityFqcn();
         $entityManager = $this->container->get('doctrine')->getManagerForClass($className);
 
+        $entities = array_map(function($id) use ($className, $entityManager) {
+            return $entityManager->find($className, $id);
+        }, $batchActionDto->getEntityIds());
+
+        return $this->generateXlsExport($entities);
+
+    }
+
+    public function generateXlsExport($entities)
+    {
         $fields =  [
             'name',
             'email',
@@ -460,10 +488,6 @@ class StructureCrudController extends AbstractCrudController
             'newsletter_email',
             'newsletter_types',
         ];
-
-        $entities = array_map(function($id) use ($className, $entityManager) {
-            return $entityManager->find($className, $id);
-        }, $batchActionDto->getEntityIds());
 
         $spreadsheet = $this->entitySpreadsheetGenerator
             ->setWorksheetTitle('Structures')
