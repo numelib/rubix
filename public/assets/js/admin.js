@@ -75,11 +75,11 @@ $(document).ready(function () {
         // SETUP
 
         const OPTIONS = {};
-        const OPTGROUPS = { 'personnal' : 1, 'professional' : 2 };
+        const OPTGROUPS = { 'personal' : 1, 'professional' : 2 };
         const PROFESSIONAL_TAB = easyAdminPage.tabs['PROFESSIONNEL'];
 
-        const PERSONNAL_EMAIL_INPUT = document.querySelector('#Contact_personnal_email');
-        const PERSONNAL_EMAIL = PERSONNAL_EMAIL_INPUT.value;
+        const personal_EMAIL_INPUT = document.querySelector('#Contact_personal_email');
+        const personal_EMAIL = personal_EMAIL_INPUT.value;
 
         const PROFESSIONAL_EMAIL_INPUTS = PROFESSIONAL_TAB.blocks['Coordonnées'].inputs.filter((input) => /Contact_contact_details_[0-9]+_email/.test(input.id));
 
@@ -92,11 +92,11 @@ $(document).ready(function () {
         TOMSELECT.clearOptions();
         TOMSELECT.refreshOptions();
         TOMSELECT.addOptionGroup(OPTGROUPS.professional, { value: 'Professionnel', label: 'Professionnel' });
-        TOMSELECT.addOptionGroup(OPTGROUPS.personnal, { value: 'Personnel', label: 'Personnel' });
+        TOMSELECT.addOptionGroup(OPTGROUPS.personal, { value: 'Personnel', label: 'Personnel' });
 
         // INIT NEWSLETTER EMAILS
 
-        OPTIONS[PERSONNAL_EMAIL] = generateTomselectOption(PERSONNAL_EMAIL, PERSONNAL_EMAIL, OPTGROUPS.personnal);
+        OPTIONS[personal_EMAIL] = generateTomselectOption(personal_EMAIL, personal_EMAIL, OPTGROUPS.personal);
 
         Array.from(PROFESSIONAL_EMAIL_INPUTS).forEach((input) => {
             OPTIONS[input.value] = generateTomselectOption(input.value, input.value, OPTGROUPS.professional);
@@ -112,15 +112,15 @@ $(document).ready(function () {
 
         TOMSELECT.addOptions(Object.values(OPTIONS));
 
-        // UPDATE PERSONNAL EMAIL
+        // UPDATE personal EMAIL
        
-        let oldValue = PERSONNAL_EMAIL;
-        PERSONNAL_EMAIL_INPUT.addEventListener('focus', function() {
+        let oldValue = personal_EMAIL;
+        personal_EMAIL_INPUT.addEventListener('focus', function() {
             oldValue = this.value;
         });
 
-        PERSONNAL_EMAIL_INPUT.addEventListener('blur', function() {
-            updateOrInsertOption(TOMSELECT, oldValue, this.value, OPTGROUPS.personnal);
+        personal_EMAIL_INPUT.addEventListener('blur', function() {
+            updateOrInsertOption(TOMSELECT, oldValue, this.value, OPTGROUPS.personal);
         });
 
         // UPDATE PROFESSIONAL EMAILS
@@ -197,11 +197,11 @@ $(document).ready(function () {
         const PROGRAM_POSTING_ADDRESS_FIELD = document.getElementById('Contact_programPosting_addressType');
         const PROGRAM_POSTING_ADDRESS = PROGRAM_POSTING_ADDRESS_FIELD?.querySelector('input:checked')?.value;
 
-        (PROGRAM_POSTING_ADDRESS === 'personnal') ? PROGRAM_POSTING_FIELD?.tomselect.disable() : PROGRAM_POSTING_FIELD?.tomselect.enable();
+        (PROGRAM_POSTING_ADDRESS === 'personal') ? PROGRAM_POSTING_FIELD?.tomselect.disable() : PROGRAM_POSTING_FIELD?.tomselect.enable();
         (IS_PROGRAM_SENT_TOGGLE?.checked) ? PROGRAM_POSTING_FIELD?.tomselect.enable() : PROGRAM_POSTING_FIELD?.tomselect.disable();
         (IS_PROGRAM_SENT_TOGGLE?.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none');
 
-        PROGRAM_POSTING_ADDRESS_FIELD?.addEventListener('change', (ev) => (ev.target.value === 'personnal') ? PROGRAM_POSTING_FIELD?.tomselect.disable() : PROGRAM_POSTING_FIELD?.tomselect.enable());
+        PROGRAM_POSTING_ADDRESS_FIELD?.addEventListener('change', (ev) => (ev.target.value === 'personal') ? PROGRAM_POSTING_FIELD?.tomselect.disable() : PROGRAM_POSTING_FIELD?.tomselect.enable());
         IS_PROGRAM_SENT_TOGGLE?.addEventListener('change', (ev) => {
             (ev.target.checked) ? PROGRAM_POSTING_BLOCK?.classList.remove('d-none') : PROGRAM_POSTING_BLOCK?.classList.add('d-none');
             (ev.target?.checked) ? PROGRAM_POSTING_FIELD?.tomselect.enable() : PROGRAM_POSTING_FIELD?.tomselect.disable();

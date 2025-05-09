@@ -15,9 +15,9 @@ is_workshop_artist : Artiste ateliers
 formationParticipantTypes : Participant.e formation
 is_formation_speaker : Intervenant.e de formation
 professional_notes : Notes
-personnal_email : Email perso
+personal_email : Email perso
 professional_email : Email pro
-personnal_phone_number : Téléphone perso
+personal_phone_number : Téléphone perso
 structure_phone_number: Numéro(s) de téléphone de la Structure
 Address: Adresse
 address_street : Rue
@@ -25,7 +25,7 @@ address_adition : Complément
 address_code : Code postal
 address_city : Ville
 address_country : Pays
-personnal_notes : Notes
+personal_notes : Notes
 contactNewsletters : Envoi newsletter
 is_receiving_festival_program : Reçoit le programme du festival
 festival_program_receipt_email : Email pour envoi du programme
@@ -97,7 +97,7 @@ structure_functions : Fonctions
 structures : Structures
 
 Create and inspect: Enregistrer et continuer
-Contact - Personnal: Contact - Personnel
+Contact - Personal: Contact - Personnel
 Contact - Professionnal: Contact - Professionnel
 Structure: Structure
 
