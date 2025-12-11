@@ -2,29 +2,31 @@
 
 namespace App\Controller\Admin;
 
-use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
-use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
-use Symfony\Component\HttpFoundation\Response;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use EasyAdminFriends\EasyAdminDashboardBundle\Controller\DefaultController as EasyAdminDashboard;
-
+use App\Entity\User;
 use App\Entity\Contact;
-use App\Entity\ContactDetail;
-use App\Entity\ContactDetailPhoneNumber;
-use App\Entity\ContactNewsletter;
-use App\Entity\FormationParticipantType;
-use App\Entity\Newsletter;
-use App\Entity\PracticalGuide;
 use App\Entity\Structure;
-use App\Entity\StructureNewsletter;
+use App\Entity\Newsletter;
 use App\Entity\ProfileType;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use App\Entity\ContactDetail;
+use App\Entity\PracticalGuide;
+use App\Entity\ContactNewsletter;
+use App\Entity\StructureNewsletter;
+use App\Entity\ContactDetailPhoneNumber;
+
+use App\Entity\FormationParticipantType;
+use Symfony\Component\HttpFoundation\Response;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use App\Controller\Admin\UserAdminCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+use EasyAdminFriends\EasyAdminDashboardBundle\Controller\DefaultController as EasyAdminDashboard;
 
 class DashboardController extends AbstractDashboardController
 {
@@ -101,6 +103,9 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Structures');
         yield MenuItem::linkToCrud('Structures', 'fa fa-industry' , Structure::class);
+
+        yield MenuItem::section('Management');
+        yield MenuItem::linkToCrud('Users', 'fa fa-user', User::class)->setController(UserAdminCrudController::class);
     }
 
     public function configureActions(): Actions
