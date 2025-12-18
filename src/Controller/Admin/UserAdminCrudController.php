@@ -62,8 +62,7 @@ class UserAdminCrudController extends AbstractCrudController
     {
         return $actions
             ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE)
-            ->disable(Action::NEW)
-            ->disable(Action::DELETE)
+            ->remove(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER)
             ;
     }
 
@@ -83,7 +82,7 @@ class UserAdminCrudController extends AbstractCrudController
     private function encodePassword(User $user)
     {
         
-        if ($user->getPassword() !== null) {
+        if ($user->getPlainPassword() !== null) {
             $hash = $this->passwordHasher->hashPassword($user, $user->getPlainPassword());
             $user->setPassword($hash);
         }

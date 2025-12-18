@@ -2,22 +2,28 @@
 
 namespace App\EventSubscriber;
 
-use App\Dto\MailjetContactDto;
 use App\Entity\Contact;
-use App\Enums\NewsletterType;
 use App\Service\MailjetAPI;
+use App\Enums\NewsletterType;
+use App\Dto\MailjetContactDto;
+use App\Entity\PracticalGuide;
 use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Event\AbstractLifecycleEvent;
-use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityPersistedEvent;
-use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityUpdatedEvent;
-use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityDeletedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use App\Controller\Admin\PracticalGuideCrudController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\AbstractLifecycleEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityDeletedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityUpdatedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityPersistedEvent;
 
 class EasyAdminSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly MailjetAPI $mailjetAPI,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManagerInterface $entityManager
     ){}
 
     public static function getSubscribedEvents(): array
@@ -125,4 +131,5 @@ class EasyAdminSubscriber implements EventSubscriberInterface
 
         $this->mailjetAPI->removeContactByEmail($newsletterEmail);
     }
+
 }

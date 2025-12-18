@@ -273,7 +273,7 @@ class StructureCrudController extends AbstractCrudController
             
             FormField::addTab($this->translator->trans('post_program'))
                 ->hideOnIndex()
-                ->hideWhenCreating()
+                //->hideWhenCreating()
             ,
 
             BooleanField::new('programSent', 'Cette structure reçoit le programme du festival')
@@ -290,7 +290,8 @@ class StructureCrudController extends AbstractCrudController
                         })
                     ],
                 ])
-                ->onlyWhenUpdating(),
+                //->onlyWhenUpdating()
+                ,
             BooleanField::new('programSent', 'Reçoit le programme du festival')->renderAsSwitch(false)->hideOnForm(),
 
             CollectionField::new('programPostings', "Si oui, adresser le programme à :")
