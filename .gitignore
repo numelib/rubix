@@ -23,10 +23,6 @@
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
 
-###> symfony/asset-mapper ###
-/assets/vendor/
-###< symfony/asset-mapper ###
-
 ###> various .lock ###
 symfony.lock
 ###< various .lock ###

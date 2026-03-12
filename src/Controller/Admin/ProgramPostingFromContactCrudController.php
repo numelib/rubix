@@ -5,7 +5,6 @@ namespace App\Controller\Admin;
 use App\Entity\Contact;
 use App\Entity\ProgramPosting;
 use App\Entity\Structure;
-use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -21,7 +20,6 @@ class ProgramPostingFromContactCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly TranslatorInterface $translator,
-        private readonly EntityManagerInterface $entityManager
     ){}
     
     public static function getEntityFqcn(): string
@@ -36,9 +34,9 @@ class ProgramPostingFromContactCrudController extends AbstractCrudController
         if(!($entity instanceof Contact)) return [];
 
         if($entity->getId() !== null) {
-            $choices = $this->entityManager->getRepository(Structure::class)->findByContact($entity);
+            $choices = $this->container->get('doctrine')->getRepository(Structure::class)->findByContact($entity);
         } else {
-            $choices = $this->entityManager->getRepository(Structure::class)->findAll();
+            $choices = $this->container->get('doctrine')->getRepository(Structure::class)->findAll();
         }
 
         $choices = array_combine($choices, $choices);

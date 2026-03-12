@@ -11,14 +11,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Intl\Countries;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 use App\Validator as ProgramPostingAssert;
 
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
-#[ORM\HasLifecycleCallbacks]
 #[ProgramPostingAssert\ContactProgramPosting]
 class Contact
 {
+    use TimestampableEntity;
+    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -76,20 +78,14 @@ class Contact
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address_adition = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $address_code = null;
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $address_code = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address_city = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address_country = null;
-
-    #[ORM\Column(type: 'datetime', nullable: 'true')]
-    private $created_at = null;
-
-    #[ORM\Column(type: 'datetime', nullable: 'true')]
-    private $updated_at = null;
 
     /**
      * @var Collection<int, Option>
@@ -372,12 +368,12 @@ class Contact
         return $this;
     }
 
-    public function getAddressCode(): ?int
+    public function getAddressCode(): ?string
     {
         return $this->address_code;
     }
 
-    public function setAddressCode(?int $address_code): static
+    public function setAddressCode(?string $address_code): static
     {
         $this->address_code = $address_code;
 
@@ -483,6 +479,19 @@ class Contact
         return $this;
     }
 
+    public function getContactStructures(): array
+    {
+        $structures = [];
+        foreach($this->getContactDetails() as $cd)
+        {
+            if($cd->getStructure()){
+                $structures[] = $cd;
+            }
+        }
+
+        return $structures;
+    }
+
     public function getContactDetailsString() : string
     {
         $contact_details = $this->contact_details->toArray();
@@ -568,43 +577,6 @@ class Contact
     public function removeDiscipline(Discipline $discipline): static
     {
         $this->disciplines->removeElement($discipline);
-
-        return $this;
-    }
-
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
-        $this->created_at = new \DateTimeImmutable();
-        $this->setUpdatedAtValue();
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(?\DateTimeInterface $created_at): static
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
-    #[ORM\PreUpdate]
-    public function setUpdatedAtValue(): void
-    {
-        $this->updated_at = new \DateTimeImmutable();
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updated_at;
-    }
-
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
-    {
-        $this->updated_at = $updated_at;
 
         return $this;
     }

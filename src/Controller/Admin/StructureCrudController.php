@@ -2,63 +2,64 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
 use App\Entity\Contact;
-use App\Entity\Structure;
 use App\Entity\ProgramPosting;
-use Doctrine\ORM\QueryBuilder;
-use App\Repository\ContactRepository;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Common\Collections\Criteria;
+use App\Entity\Structure;
 use App\Entity\StructureTypeSpecialization;
-use App\Service\EntitySpreadsheetGenerator;
-use App\Form\Admin\StructurePhoneNumberType;
-use Symfony\Component\HttpFoundation\Response;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use App\Form\Admin\ProgramPostingFromStructureType;
+use App\Form\Admin\StructurePhoneNumberType;
+use App\Repository\ContactRepository;
+use App\Service\EntitySpreadsheetGenerator;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
-use Symfony\Component\Validator\Constraints\Unique;
-use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
-use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
-use Symfony\Component\Validator\Constraints\Callback;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
-use Symfony\Component\Validator\Constraints\Collection;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
-use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Unique;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class StructureCrudController extends AbstractCrudController
 {
@@ -76,8 +77,8 @@ class StructureCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $exportXlsBtn = Action::new('exportAllAsXls', 'Export XLS', 'fa-regular fa-file-excel')
-            ->addCssClass('btn-success text-white')
+        $exportXlsBtn = Action::new('exportAllAsXls', 'Export whole list as Xlsx', 'fa-regular fa-file-excel')
+            ->asSuccessAction()
             ->linkToCrudAction('exportAllAsXls')
             ->createAsGlobalAction()
         ;
@@ -85,10 +86,11 @@ class StructureCrudController extends AbstractCrudController
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $exportXlsBtn)
-            ->addBatchAction(Action::new('xlsExport', 'Export XLS')
+            ->addBatchAction(Action::new('xlsExport', 'Export selected items as Xlsx')
                 ->linkToCrudAction('exportAsXls')
-                ->addCssClass('btn btn-primary')
+                ->asPrimaryAction()
                 ->setIcon('fa-solid fa-file-excel'))
+            ->remove(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER)
             ->update(Crud::PAGE_INDEX, Action::NEW, fn(Action $action) => $action->setLabel('Créer une Structure'))
             ;
     }
@@ -139,7 +141,10 @@ class StructureCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Structures')
             ->setFormThemes(['admin/form/contacts_list.html.twig', '@EasyAdmin/crud/form_theme.html.twig'])
             ->setPaginatorPageSize(20)
-            ->setPaginatorRangeSize(4);
+            ->setPaginatorRangeSize(4)
+            ->askConfirmationOnBatchActions(false)
+            ->setSearchFields(['name', 'email', 'structure_notes', 'organization_notes', 'address_street', 'address_city', 'festival_informations', 'contact_details.contact.firstname', 'contact_details.contact.lastname']);
+
         return $crud;
     }
 
@@ -162,6 +167,9 @@ class StructureCrudController extends AbstractCrudController
                 ->hideOnIndex(),
             AssociationField::new('structureType', $this->translator->trans('structure_type'))
                 ->setQueryBuilder(fn (QueryBuilder $queryBuilder) => $queryBuilder->addCriteria(Criteria::create()->orderBy(['name' => 'ASC'])))
+                //->setRequired(true)
+                ->setFormTypeOption('attr', ['required' => true])
+                ->setFormTypeOption('label_attr', ['class' => 'required'])
                 ->hideOnIndex(),
             AssociationField::new('structure_type_specializations', $this->translator->trans('structure_type_specializations'))
                 ->setFormTypeOptions([
@@ -197,25 +205,31 @@ class StructureCrudController extends AbstractCrudController
                 ->setEntryIsComplex()
                 ->renderExpanded()
                 ->hideOnIndex(),
+
             FormField::addFieldset('Adresse')
                 ->hideOnIndex(),
             TextField::new('address_street', $this->translator->trans('address_street'))
                 ->hideOnDetail()
-                ->hideOnIndex(),
+                ->hideOnIndex()
+                ->setColumns(7),
             TextField::new('address_adition', $this->translator->trans('address_adition'))
                 ->hideOnDetail()
-                ->hideOnIndex(),
-            IntegerField::new('address_code', $this->translator->trans('address_code'))
+                ->hideOnIndex()
+                ->setColumns(5),
+            TextField::new('address_code', $this->translator->trans('address_code'))
                 ->hideOnDetail()
-                ->hideOnIndex(),
+                ->hideOnIndex()
+                ->setColumns(2),
             TextField::new('address_city', $this->translator->trans('address_city'))
                 ->hideOnDetail()
-                ->hideOnIndex(),
+                ->hideOnIndex()
+                ->setColumns(7),
             CountryField::new('address_country', $this->translator->trans('address_country'))
                 ->hideOnDetail()
                 ->hideOnIndex()
-                ->setEmptyData('FR'),
-            Field::new('formatted_address', $this->translator->trans('Address'))
+                ->setEmptyData('FR')
+                ->setColumns(3),
+            Field::new('formatted_address', false)
                 ->hideOnForm()
                 ->setFormTypeOptions([
                     'mapped' => false,
@@ -298,6 +312,7 @@ class StructureCrudController extends AbstractCrudController
                 ->useEntryCrudForm(ProgramPostingFromStructureCrudController::class)
                 ->setRequired(false)
                 ->onlyWhenUpdating()
+                ->setEntryIsComplex()
                 ->setFormTypeOptions([
                     'entry_options' => [
                         'constraints' => [
@@ -427,14 +442,14 @@ class StructureCrudController extends AbstractCrudController
 
     protected function getRedirectResponseAfterSave(AdminContext $context, string $action): RedirectResponse
     {
-        $submitButtonName = $context->getRequest()->request->all()['ea']['newForm']['btn'];
+        $submitButtonName = $context->getRequest()->request->all()['ea']['newForm']['btn'] ?? null;
 
         if($submitButtonName === Action::SAVE_AND_RETURN) {
-            $url =$this->container->get(AdminUrlGenerator::class)
-                ->setDashboard(DashboardController::class)
-                ->setAction(Action::DETAIL)
-                ->setEntityId($context->getEntity()->getPrimaryKeyValue())
-                ->generateUrl();
+
+            $url = $this->container->get(AdminUrlGeneratorInterface::class)
+                    ->setAction(Action::DETAIL)
+                    ->setEntityId($context->getEntity()->getPrimaryKeyValue())
+                    ->generateUrl();
 
             return $this->redirect($url);
         }
@@ -485,6 +500,7 @@ class StructureCrudController extends AbstractCrudController
             'festival_informations',
             'program_sent',
             'post_program_contacts',
+            'post_program_contacts_structuresFunctions',
             'is_festival_partner',
             'newsletter_email',
             'newsletter_types',
@@ -504,7 +520,7 @@ class StructureCrudController extends AbstractCrudController
             200,
             array(
                 'Content-Type' => 'application/vnd.ms-excel',
-                'Content-Disposition' => 'attachment; filename="Export - Structures.xls"',
+                'Content-Disposition' => 'attachment; filename="Export - Structures.xlsx"',
             )
         );
     }

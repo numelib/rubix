@@ -58,7 +58,6 @@ $(document).ready(function () {
         });
     });
 
-
     const easyAdminPage = new EasyAdminPage(document.body);
     const formPages = [EasyAdminPage.names.new, EasyAdminPage.names.edit];
 

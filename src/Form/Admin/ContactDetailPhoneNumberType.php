@@ -27,7 +27,7 @@ class ContactDetailPhoneNumberType extends AbstractType
                 ],
                 'country_options' => [
                     'label' => $this->translator->trans('country'),
-                ],
+                ]
             ])
         ;
     }

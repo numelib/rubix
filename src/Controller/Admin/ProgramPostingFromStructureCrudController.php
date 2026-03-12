@@ -6,7 +6,6 @@ use App\Entity\Contact;
 use App\Entity\Structure;
 use App\Entity\ProgramPosting;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -20,8 +19,7 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 class ProgramPostingFromStructureCrudController extends AbstractCrudController
 {
     public function __construct(
-        private readonly TranslatorInterface $translator,
-        private readonly EntityManagerInterface $entityManager
+        private readonly TranslatorInterface $translator
     ){}
     
     public static function getEntityFqcn(): string
@@ -31,20 +29,15 @@ class ProgramPostingFromStructureCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $entity = $this->getContext()->getEntity()->getInstance();
+        $entity = $this->getContext()->getEntity();
+        $request = $this->getContext()->getRequest();
+        $parentId = $request->query->get('entityId');
 
-        if(!($entity instanceof Structure)) return [];
+        $entity = $this->container->get('doctrine')->getRepository(Structure::class)->find($parentId);
 
-        /*if($entity->getId() !== null) {
-            $choices = $this->entityManager->getRepository(Contact::class)->findByStructure($entity);
-        } else {
-            $choices = $this->entityManager->getRepository(Contact::class)->findAllLeftJoined();
+        if(!($entity instanceof Structure)){
+            return [];
         }
-
-        $contacts = [];
-        foreach($choices as $c){
-            $contacts[$c->__toString()] = $c->getId();
-        }*/
 
         return [
             AssociationField::new('contact')
@@ -54,9 +47,6 @@ class ProgramPostingFromStructureCrudController extends AbstractCrudController
                     'choices' => $entity->getContacts()
                 ])
                 ->setRequired(false)
-                /*->setQueryBuilder(
-                    fn (QueryBuilder $queryBuilder) => $queryBuilder->getEntityManager()->getRepository(Contact::class)->findAllLeftJoined()
-                )*/
 
         ];
     }

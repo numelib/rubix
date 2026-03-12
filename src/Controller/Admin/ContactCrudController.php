@@ -2,66 +2,67 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
+use App\Controller\Admin\Filter\ContactStructureFilter;
+use App\Controller\Admin\Filter\HasStructureFilter;
+use App\Controller\Admin\Filter\HasStructureFunctionFilter;
+use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
 use App\Entity\Contact;
-use App\Entity\Structure;
+use App\Entity\ContactDetail;
 use App\Entity\Discipline;
 use App\Entity\PostProgram;
-use App\Entity\ContactDetail;
 use App\Entity\ProgramPosting;
-use Doctrine\ORM\QueryBuilder;
+use App\Entity\Structure;
 use App\Form\Admin\ContactDetailType;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Common\Collections\Criteria;
 use App\Form\ProgramPostingFromContactType;
 use App\Service\EntitySpreadsheetGenerator;
-use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
-use App\Controller\Admin\Filter\HasStructureFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
-use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
-use Symfony\Component\Validator\Constraints\Callback;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use App\Controller\Admin\Filter\ContactStructureFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
-use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
-use App\Controller\Admin\Filter\HasStructureFunctionFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
-use App\Controller\Admin\Filter\IsReceivingFestivalProgramFilter;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
-use App\Controller\Admin\Filter\ContactIsReceivingFestivalProgramFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
+use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ContactCrudController extends AbstractCrudController
 {
@@ -87,7 +88,9 @@ class ContactCrudController extends AbstractCrudController
             ->setPaginatorPageSize(20)
             ->setPaginatorRangeSize(4)
             ->setDefaultSort(['lastname' => 'ASC'])
-            ->setSearchFields(['firstname', 'lastname', 'contact_details.structure.name']);
+            ->setSearchFields(['firstname', 'lastname', 'contact_details.structure.name'])
+            ->askConfirmationOnBatchActions(false)
+            ;
 
         return $crud;
     }
@@ -106,43 +109,31 @@ class ContactCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $createAndInspectActionName = 'createAndInspect';
-
-        $exportXlsBtn = Action::new('exportAllAsXls', 'Export XLS', 'fa-regular fa-file-excel')
-            ->addCssClass('btn-success text-white')
+        $exportXlsBtn = Action::new('exportAllAsXls', 'Export whole list as Xlsx', 'fa-regular fa-file-excel')
+            ->asSuccessAction()
             ->linkToCrudAction('exportAllAsXls')
             ->createAsGlobalAction()
         ;
 
-        $exportPdfBtn = Action::new('exportAllAsPdf', 'Export PDF', 'fa-solid fa-file-pdf')
-            ->addCssClass('btn-success text-white')
+        $exportPdfBtn = Action::new('exportAllAsPdf', 'Export whole list as PDF', 'fa-solid fa-file-pdf')
+            ->asSuccessAction()
             ->linkToCrudAction('exportAllAsPdf')
             ->createAsGlobalAction()
         ;
 
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_NEW, Action::new($createAndInspectActionName)
-                ->setCssClass('action-'.Action::SAVE_AND_RETURN)
-                ->addCssClass('btn btn-primary action-save')
-                ->displayAsButton()
-                ->setHtmlAttributes(['type' => 'submit', 'name' => 'ea[newForm][btn]', 'value' => $createAndInspectActionName])
-                ->linkToCrudAction(Action::NEW)
-                ->setLabel($this->translator->trans('Create and inspect'))
-            )
             ->add(Crud::PAGE_INDEX, $exportXlsBtn)
             ->add(Crud::PAGE_INDEX, $exportPdfBtn)
-            ->addBatchAction(Action::new('xlsExport', 'Export XLS')
+            ->addBatchAction(Action::new('xlsExport', 'Export selected items as Xlsx')
                 ->linkToCrudAction('exportAsXls')
-                ->addCssClass('btn btn-primary')
+                ->asPrimaryAction()
                 ->setIcon('fa-solid fa-file-excel'))
-            ->addBatchAction(Action::new('pdfExport', 'Export PDF')
+            ->addBatchAction(Action::new('pdfExport', 'Export selected items as PDF')
                 ->linkToCrudAction('exportAsPdf')
-                ->addCssClass('btn btn-primary')
+                ->asPrimaryAction()
                 ->setIcon('fa-solid fa-file-pdf'))
             ->remove(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER)
-            ->remove(Crud::PAGE_NEW, Action::SAVE_AND_CONTINUE)
-            ->reorder(Crud::PAGE_NEW, [Action::INDEX, $createAndInspectActionName])
             ->update(Crud::PAGE_INDEX, Action::NEW, fn(Action $action) => $action->setLabel('Créer un Contact'))
         ;
     }
@@ -282,7 +273,7 @@ class ContactCrudController extends AbstractCrudController
                 })
                 ->onlyOnIndex(),*/
 
-            AssociationField::new('contact_details', $this->translator->trans('structures'))
+            AssociationField::new('contact_details', $this->translator->trans('Structure(s)'))
                     ->setTemplatePath('admin/fields/contact_structures.html.twig')
                     ->setTextAlign('left')
                     //->setSortable(true) -> TODO: sort by Structure name
@@ -298,7 +289,16 @@ class ContactCrudController extends AbstractCrudController
             FormField::addFieldset('Général'),
             EmailField::new('personal_email', $this->translator->trans('personal_email'))
                 ->hideOnIndex(),
-            TelephoneField::new('personal_phone_number', $this->translator->trans('personal_phone_number'))
+            
+            TextEditorField::new('personal_notes', $this->translator->trans('personal_notes'))
+                ->onlyOnForms(),
+            TextField::new('personal_notes', $this->translator->trans('professional_notes'))
+                ->renderAsHtml()
+                ->onlyOnDetail(),
+
+            FormField::addColumn(6),
+            FormField::addFieldset($this->translator->trans('personal_phone_number')),
+            TelephoneField::new('personal_phone_number', false)
                 ->setFormType(PhoneNumberType::class)
                 ->setFormTypeOptions([
                     'widget' => PhoneNumberType::WIDGET_COUNTRY_CHOICE,
@@ -307,30 +307,25 @@ class ContactCrudController extends AbstractCrudController
                         'label' => $this->translator->trans('phone_number')
                     ],
                     'country_options' => [
-                        'label' => $this->translator->trans('country'),
+                        'label' => $this->translator->trans('country_phone'),
                     ],
                 ])
                 ->hideOnIndex(),
-            TextEditorField::new('personal_notes', $this->translator->trans('personal_notes'))
-                ->onlyOnForms(),
-            TextField::new('personal_notes', $this->translator->trans('professional_notes'))
-                ->renderAsHtml()
-                ->onlyOnDetail(),
 
-            FormField::addColumn(6),
+
             FormField::addFieldset('Adresse'),
             TextField::new('address_street', $this->translator->trans('address_street'))
-                ->onlyOnForms(),
+                ->onlyOnForms()->setColumns(7),
             TextField::new('address_adition', $this->translator->trans('address_adition'))
-                ->onlyOnForms(),
-            IntegerField::new('address_code', $this->translator->trans('address_code'))
-                ->onlyOnForms(),
+                ->onlyOnForms()->setColumns(5),
+            TextField::new('address_code', $this->translator->trans('address_code'))
+                ->onlyOnForms()->setColumns(2),
             TextField::new('address_city', $this->translator->trans('address_city'))
-                ->onlyOnForms(),
+                ->onlyOnForms()->setColumns(7),
             CountryField::new('address_country', $this->translator->trans('address_country'))
                 ->setEmptyData('FR')
-                ->onlyOnForms(),
-            TextField::new('formatted_address', $this->translator->trans('Address'))
+                ->onlyOnForms()->setColumns(3),
+            TextField::new('formatted_address', false)
                 ->renderAsHtml()
                 ->onlyOnDetail(),
 
@@ -604,7 +599,7 @@ class ContactCrudController extends AbstractCrudController
             200,
             array(
                 'Content-Type' => 'application/vnd.ms-excel',
-                'Content-Disposition' => 'attachment; filename="Export - Contacts.xls"',
+                'Content-Disposition' => 'attachment; filename="Export - Contacts.xlsx"',
             )
         );
     }
@@ -638,46 +633,18 @@ class ContactCrudController extends AbstractCrudController
 
     protected function getRedirectResponseAfterSave(AdminContext $context, string $action): RedirectResponse
     {
-        $submitButtonName = $context->getRequest()->request->all()['ea']['newForm']['btn'];
+        $submitButtonName = $context->getRequest()->request->all()['ea']['newForm']['btn'] ?? null;
 
-        if($submitButtonName === Action::SAVE_AND_RETURN && $context->getCrud()->getCurrentPage() === Action::EDIT) {
-            $url =$this->container->get(AdminUrlGenerator::class)
-                ->setDashboard(DashboardController::class)
-                ->setAction(Action::DETAIL)
-                ->setEntityId($context->getEntity()->getPrimaryKeyValue())
-                ->generateUrl();
+        if($submitButtonName === Action::SAVE_AND_RETURN) {
 
-            return $this->redirect($url);
-        }
-
-        if($submitButtonName === 'createAndInspect') {
-            $url =$this->container->get(AdminUrlGenerator::class)
-                ->setDashboard(DashboardController::class)
-                ->setAction(Action::DETAIL)
-                ->setEntityId($context->getEntity()->getPrimaryKeyValue())
-                ->generateUrl();
+            $url = $this->container->get(AdminUrlGeneratorInterface::class)
+                    ->setAction(Action::DETAIL)
+                    ->setEntityId($context->getEntity()->getPrimaryKeyValue())
+                    ->generateUrl();
 
             return $this->redirect($url);
         }
 
         return parent::getRedirectResponseAfterSave($context, $action);
     }
-
-    // protected function getRedirectResponseAfterSave(AdminContext $context, string $action): RedirectResponse
-    // {
-    //     $submitButtonName = $context->getRequest()->request->all()['ea']['newForm']['btn'];
-
-    //     $url = match ($submitButtonName) {
-    //         Action::SAVE_AND_CONTINUE => $this->container->get(AdminUrlGenerator::class)
-    //             ->setAction(Action::EDIT)
-    //             ->setEntityId($context->getEntity()->getPrimaryKeyValue())
-    //             ->generateUrl(),
-    //         Action::SAVE_AND_RETURN => $context->getReferrer()
-    //             ?? $this->container->get(AdminUrlGenerator::class)->setAction(Action::INDEX)->generateUrl(),
-    //         Action::SAVE_AND_ADD_ANOTHER => $this->container->get(AdminUrlGenerator::class)->setAction(Action::NEW)->generateUrl(),
-    //         default => $this->generateUrl($context->getDashboardRouteName()),
-    //     };
-
-    //     return $this->redirect($url);
-    // }
 }

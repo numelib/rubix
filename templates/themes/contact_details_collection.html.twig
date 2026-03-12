@@ -1,6 +1,5 @@
 {% extends '@EasyAdmin/crud/form_theme.html.twig' %}
 
-
 {% block collection_widget %}
     {# the "is iterable" check is needed because if an object implements __toString() and
                returns an empty string, "is empty" returns true even if it's not a collection #}
@@ -22,8 +21,6 @@
     {% if isEmptyCollection or form.vars.prototype is defined %}
         {% set attr = attr|merge({'data-empty-collection': block('empty_collection') }) %}
     {% endif %}
-
-
 
     {% if allow_add|default(false) and not disabled %}
         <button type="button" class="btn btn-link field-collection-add-button">

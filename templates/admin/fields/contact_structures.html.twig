@@ -1,10 +1,10 @@
-{% set contactDetails = field.value %}
+{% set contactStructures = entity.instance.contactStructures %}
 
-{% if contactDetails|length > 0 %}
-<ul class="list-unstyled text-start">
-{% for contactDetail in contactDetails %}
+{% if contactStructures|length > 0 %}
+<ul class="list-group text-start list-group-flush m-0">
+{% for contactDetail in contactStructures %}
 
-    <li>
+    <li class="list-group-item m-0">
         {% if contactDetail.structure %}
             {% set url = ea_url().setController('App\\Controller\\Admin\\StructureCrudController')
                       .setEntityId(contactDetail.structure.id)

@@ -33,7 +33,8 @@ class ContactDetailType extends AbstractType
             ])
             ->add('structure_function', TextType::class, [
                 'attr' => ['required' => true],
-                'label' => $this->translator->trans('structure_function')
+                'label' => $this->translator->trans('structure_function'),
+                'label_attr' => ['class' => 'required']
             ])
             ->add('structure', ChoiceType::class, [
                 'choices' => $this->entityManager->getRepository(Structure::class)->findAll(),

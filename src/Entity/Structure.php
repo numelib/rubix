@@ -9,10 +9,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Intl\Countries;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 #[ORM\Entity(repositoryClass: StructureRepository::class)]
 class Structure
 {
+    use TimestampableEntity;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -48,7 +51,7 @@ class Structure
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address_adition = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(length: 10, nullable: true)]
     private ?string $address_code = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -89,12 +92,6 @@ class Structure
 
     #[ORM\Column]
     private ?bool $is_festival_partner = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $updated_at = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\ManyToOne()]
     private ?StructureType $structureType = null;
@@ -411,43 +408,6 @@ class Structure
         return $this;
     }
 
-    #[ORM\PreUpdate]
-    public function setUpdatedAtValue(): void
-    {
-        $this->updated_at = new \DateTimeImmutable();
-    }
-
-    public function getUpdatedAt(): ?\DateTimeImmutable
-    {
-        return $this->updated_at;
-    }
-
-    public function setUpdatedAt(\DateTimeImmutable $updated_at): static
-    {
-        $this->updated_at = $updated_at;
-
-        return $this;
-    }
-
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
-        $this->created_at = new \DateTimeImmutable();
-        $this->setUpdatedAtValue();
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
     public function setFestivalPartner(bool $is_festival_partner): static
     {
         $this->is_festival_partner = $is_festival_partner;
@@ -647,7 +607,7 @@ class Structure
         return $this;
     }
 
-    public function getProgramPostingContacts(): ?string
+    public function getProgramPostingContacts(): array
     {
         $contacts = [];
 
@@ -658,7 +618,22 @@ class Structure
             }
         }
 
-        return count($contacts)>0 ? implode('\n', $contacts) : null;
+        return $contacts;
+    }
+
+    public function getProgramPostingContactsStructureFunctions(): array
+    {
+        $contacts = $this->getProgramPostingContacts();
+        $functions = [];
+        $functions = [];
+
+        foreach($contacts as $c)
+        {
+            $functions[] = implode(', ', $c->getStructuresFunctions()->toArray());
+        }
+        
+
+        return $functions;
     }
 
 }

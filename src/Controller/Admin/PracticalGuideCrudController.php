@@ -46,7 +46,9 @@ class PracticalGuideCrudController extends AbstractCrudController
         $actions
             ->disable(Action::DELETE, Action::NEW, Action::INDEX)
             ->remove(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER)
-            ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
+            ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE)
+            ->add(Crud::PAGE_EDIT, Action::DETAIL, fn(Action $action) => $action->setLabel('Cancel'))
+            ;
 
         $practicalGuides = $this->entityManager->getRepository(PracticalGuide::class)->findAll();
         if(count($practicalGuides) > 0) $actions->disable(Action::NEW);

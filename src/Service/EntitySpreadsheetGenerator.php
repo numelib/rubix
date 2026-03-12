@@ -108,7 +108,14 @@ class EntitySpreadsheetGenerator
                     if($entity instanceof Structure && $field === 'post_program_contacts') {
                         $structure = $entity;
                         $contacts = $structure?->getProgramPostingContacts();
-                        $cell['value'] = ($contacts !== null) ? str_replace('\n', PHP_EOL, $contacts) : 'Aucun(e)';
+                        $cell['value'] = (count($contacts)>0) ? implode(PHP_EOL, $contacts) : 'Aucun(e)';
+                        $spreadsheet->getActiveSheet()->getStyle($cell['position'])->getAlignment()->setWrapText(true);
+                    }
+
+                    if($entity instanceof Structure && $field === 'post_program_contacts_structuresFunctions') {
+                        $structure = $entity;
+                        $contacts = $structure?->getProgramPostingContactsStructureFunctions();
+                        $cell['value'] = (count($contacts)>0) ? implode(PHP_EOL, $contacts) : 'Aucun(e)';
                         $spreadsheet->getActiveSheet()->getStyle($cell['position'])->getAlignment()->setWrapText(true);
                     }
                 }

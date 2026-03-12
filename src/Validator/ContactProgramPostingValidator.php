@@ -20,17 +20,21 @@ class ContactProgramPostingValidator extends ConstraintValidator
 
         if ($contact->getProgramSent() && !$contact->getProgramPosting()) {
             $this->context
-                ->buildViolation('Merci d\'indiquer à quelle adresse ce contact reçoit le programme.')
+                ->buildViolation('Merci d\'indiquer à quelle adresse ce contact reçoit le programme du festival.')
                 ->atPath('contact.programSent')
                 ->addViolation();
         }
 
         if ($contact->getProgramSent() && $contact->getProgramPosting()) {
             if($contact->getProgramPosting()->getAddressType() === 'professional' && !$contact->getProgramPosting()->getStructure())
-            $this->context
-                ->buildViolation('Merci d\'indiquer à quelle structure adresser le programme.')
-                ->atPath('contact.programSent')
+            {
+                $this->context
+                ->buildViolation('Merci d\'indiquer à quelle structure adresser le programme du festival.')
+                //->atPath('programPosting.addressType')
+                ->atPath('programPosting')
                 ->addViolation();
+            }
+            
         }
     }
 }

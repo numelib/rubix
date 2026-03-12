@@ -48,7 +48,9 @@ class DashboardController extends AbstractDashboardController
     {
         return Crud::new()
             ->overrideTemplate('layout', 'admin/advanced_layout.html.twig')
-            ->hideNullValues();
+            ->hideNullValues()
+            ->showEntityActionsInlined()
+            ;
     }
 
     public function login(AuthenticationUtils $authenticationUtils): Response
@@ -75,18 +77,19 @@ class DashboardController extends AbstractDashboardController
     public function configureAssets(): Assets
     {
         return Assets::new()
-            //->addJsFile("https://code.jquery.com/jquery-3.6.0.js")
-            //->addJsFile("https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js")
-            //->addJsFile('assets/js/admin.js')
-            //->addCssFile('assets/css/admin.css')
         ;
     }
 
     public function configureDashboard(): Dashboard
     {
-        return Dashboard::new()
+        $dashboard = parent::configureDashboard();
+
+        $dashboard
             ->setTitle('<img src="/assets/img/logo.svg"><span class="d-block mt-3 fw-bold">' . strtoupper($_ENV['APP_NAME'] ?? 'CRM') . '<span>')
             ->renderContentMaximized();
+
+
+        return $dashboard;
     }
 
     public function configureMenuItems(): iterable

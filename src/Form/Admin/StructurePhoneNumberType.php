@@ -26,7 +26,7 @@ class StructurePhoneNumberType extends AbstractType
                     'label' => $this->translator->trans('phone_number')
                 ],
                 'country_options' => [
-                    'label' => $this->translator->trans('country'),
+                    'label' => $this->translator->trans('country_phone'),
                 ],
             ])
         ;

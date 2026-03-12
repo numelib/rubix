@@ -9,11 +9,15 @@ contact_details : Coordonnées
 contact_details_string : Coordonnées
 website : Site internet
 profile_types : Profil(s)
+Profile Types : Profil(s)
 disciplines : Discipline(s)
 discipline : Discipline
 is_workshop_artist : Artiste ateliers
+Is Workshop Artist : Artiste ateliers
 formationParticipantTypes : Participant.e formation
+Formation Participant Types : Participant.e formation
 is_formation_speaker : Intervenant.e de formation
+Is Formation Speaker : Intervenant.e de formation
 professional_notes : Notes
 personal_email : Email perso
 professional_email : Email pro
@@ -31,8 +35,11 @@ is_receiving_festival_program : Reçoit le programme du festival
 festival_program_receipt_email : Email pour envoi du programme
 communication_notes : Notes
 is_festival_participant : Bénévole festival
+Is Festival Participant : Bénévole festival
 is_board_of_directors_member : Membre du CA
+Is Board Of Directors Member : Membre du CA
 is_organization_participant : Adhérent.e
+Is Organization Participant : Adhérent.e
 organization_notes : Notes
 structure_notes : Notes
 structure_type_specializations : Sous-type de structure
@@ -41,6 +48,7 @@ email : Email générique
 phone_number : Numéro de téléphone
 phone_numbers : Numéros de téléphone
 country: Pays
+country_phone: Indicatif pays
 is_festival_organizer : Organisation d'un festival
 is_company_programmed_in_festival : Compagnie programmée dans le festival
 is_workshop_partner : Structure partenaire ateliers
@@ -61,14 +69,15 @@ contact_email : Email contact
 structure_email : Email structure
 newsletter_type : Type de newsletter
 newsletter_types : Types de newsletter
+Newsletter Types : Types de newsletter
 modified_at : Modifié le
 created_at : Créé le
 Updated_at : Modifié le
 Created_at : Créé le
 updated_at :  Modifié le
 newsletter_email : Email pour envoi newsletter
-structure_address_code : 'Code postal de la/des structure(s) associée(s)'
-structure_address_city : 'Ville de la/des structure(s) associée(s)'
+structure_address_code : 'Code postal structure(s) associée(s)'
+structure_address_city : 'Ville structure(s) associée(s)'
 structure_is_festival_partner: 'Structure(s) associée(s) partenaire(s) du festival'
 structure_is_company_programmed_in_festival: 'Structure(s) associée(s) programmée(s) au festival'
 structure_is_workshop_partner: 'Structure(s) associée(s) partenaire(s) ateliers'
@@ -100,6 +109,7 @@ Create and inspect: Enregistrer et continuer
 Contact - Personal: Contact - Personnel
 Contact - Professionnal: Contact - Professionnel
 Structure: Structure
+Structure(s): Structure(s)
 
 Festival program: Programme festival
 Festival programs: Programmes festival
@@ -124,6 +134,7 @@ Contact address is incomplete: L'adresse du contact est incomplète
 Add new contact: Ajouter un nouveau contact
 
 post_program_contacts: Programme à adresser au(x) contact(s)
+post_program_contacts_structuresFunctions: Fonction(s) contact(s) à qui adresser le programme
 
 Management: Gestion
 Users: Utilisateurs
@@ -134,3 +145,8 @@ Password: Mot de passe
 Password (confirmation): Mot de passe (confirmation)
 Profile: Profil
 Personal information: Informations personnelles
+
+Export whole list as Xlsx: Export Xlsx de la liste
+Export whole list as PDF: Export PDF de la liste
+Export selected items as Xlsx: Export Xlsx de la sélection
+Export selected items as PDF: Export PDF de la sélection

@@ -19,7 +19,7 @@
     </div>
 
     {% if isEmptyCollection or form.vars.prototype is defined %}
-        {% set attr = attr|merge({'data-empty-collection': block('empty_collection') }) %}
+        {% set attr = attr|merge({'data-empty-collection': block('empty_collection')}) %}
     {% endif %}
 
     {% if allow_add|default(false) and not disabled %}

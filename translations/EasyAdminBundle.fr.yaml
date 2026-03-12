@@ -1,0 +1,5 @@
+user: 
+  exit_impersonation: Retourner à mon interface
+action:
+    save: Enregistrer
+    save_and_continue: Enregistrer et continuer
