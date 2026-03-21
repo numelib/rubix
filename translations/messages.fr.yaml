@@ -52,14 +52,18 @@ country_phone: Indicatif pays
 is_festival_organizer : Organisation d'un festival
 is_company_programmed_in_festival : Compagnie programmée dans le festival
 is_workshop_partner : Structure partenaire ateliers
+Is Festival Organizer : Organisation d'un festival
+Is Company Programmed In Festival : Compagnie programmée dans le festival
+Is Workshop Partner : Structure partenaire ateliers
 contacts : Contacts
 contact: Contact
 near_parcs : Proximité avec un parc
+Near Parcs : Proximité avec un parc
 structureType : Type de structure
 structure_type : Type de structure
 festival_informations : Informations du festival
 is_festival_partner : Partenaire du festival
-
+Is Festival Partner: Partenaire du festival
 structure_newsletters : Newsletters
 festival_program_receipt_contacts : Contacts recevant le programme du festival
 code : Code

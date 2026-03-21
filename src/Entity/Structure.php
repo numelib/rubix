@@ -625,11 +625,12 @@ class Structure
     {
         $contacts = $this->getProgramPostingContacts();
         $functions = [];
-        $functions = [];
 
         foreach($contacts as $c)
         {
-            $functions[] = implode(', ', $c->getStructuresFunctions()->toArray());
+            if($c && $c->getStructuresFunctions()){
+                $functions[] = implode(', ', $c->getStructuresFunctions()->toArray());
+            }
         }
         
 
