@@ -54,12 +54,15 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -589,19 +592,37 @@ class ContactCrudController extends AbstractCrudController
             ->setWorksheetTitle('Contacts')
             ->getContactsSpreadsheet($entities, $fields);
 
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, "Xlsx");
+        $writer = new Xlsx($spreadsheet);
 
-        ob_start();
-        $writer->save('php://output');
+        // Nettoyage des tampons de sortie
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
 
-        return new Response(
-            ob_get_clean(),
-            200,
-            array(
-                'Content-Type' => 'application/vnd.ms-excel',
-                'Content-Disposition' => 'attachment; filename="Export - Contacts.xlsx"',
-            )
+        $response = new StreamedResponse(
+            function () use ($writer) {
+                $writer->save('php://output');
+            }
         );
+
+        // Définition des en-têtes
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            "Export_Contacts_" . date('d-m-Y') . ".xlsx"
+        ));
+
+        // Désactive la mise en cache pour éviter les problèmes de corruption
+        $response->headers->set('Cache-Control', '');
+        $response->headers->set('Pragma', 'public');
+
+        // Libération des ressources
+        $response->sendHeaders();
+        $writer->save('php://output');
+        $spreadsheet->disconnectWorksheets();
+        unset($spreadsheet, $writer);
+
+        return $response;
     }
 
     public function exportAllAsPdf(AdminContext $context, DompdfWrapperInterface $domPdfWrapper)
