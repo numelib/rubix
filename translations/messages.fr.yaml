@@ -27,8 +27,11 @@ Address: Adresse
 address_street : Rue
 address_adition : Complément
 address_code : Code postal
+Address Code : Code postal
 address_city : Ville
+Address City : Ville
 address_country : Pays
+Address Country : Pays
 personal_notes : Notes
 contactNewsletters : Envoi newsletter
 is_receiving_festival_program : Reçoit le programme du festival
