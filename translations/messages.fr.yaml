@@ -46,6 +46,7 @@ Is Organization Participant : Adhérent.e
 organization_notes : Notes
 structure_notes : Notes
 structure_type_specializations : Sous-type de structure
+Structure Type Specializations : Sous-type de structure
 name : Nom
 email : Email générique
 phone_number : Numéro de téléphone
@@ -64,6 +65,7 @@ near_parcs : Proximité avec un parc
 Near Parcs : Proximité avec un parc
 structureType : Type de structure
 structure_type : Type de structure
+Structure Type : Type de structure
 festival_informations : Informations du festival
 is_festival_partner : Partenaire du festival
 Is Festival Partner: Partenaire du festival
@@ -94,6 +96,9 @@ contact_is_organization_participant: 'Contact(s) associé(s) étant adhérent.e(
 email_type: Email d'envoi du programme
 festival_program_is_sent: Envoi programme du festival
 contacts_receiving_festival_program: Contacts recevant le programme du festival
+Program Postings Recipient: Destinataire du programme
+ProgramPostingsRecipient.structure: Structure
+ProgramPostingsRecipient.contacts: Contact(s) au sein de la structure
 none: Aucun(e)
 Festival program is not sent to this structure: Le programme du festival n'est pas envoyé à cette structure
 Festival program is not sent to this contact: Le programme du festival n'est pas envoyé à ce contact

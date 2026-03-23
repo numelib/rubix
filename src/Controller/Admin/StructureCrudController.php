@@ -11,6 +11,7 @@ use App\Form\Admin\ProgramPostingFromStructureType;
 use App\Form\Admin\StructurePhoneNumberType;
 use App\Repository\ContactRepository;
 use App\Service\EntitySpreadsheetGenerator;
+use App\Controller\Admin\Filter\ProgramPostingsRecipientFilter;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -122,6 +123,7 @@ class StructureCrudController extends AbstractCrudController
             ->add(ChoiceFilter::new('address_code')->setChoices(empty($adressCodesChoices) ? ["Aucun" => 0] : $adressCodesChoices)->setFormTypeOption('value_type_options.multiple', true))
             ->add(ChoiceFilter::new('address_city')->setChoices(empty($adressCitiesChoices) ? ["Aucun" => 0] : $adressCitiesChoices)->setFormTypeOption('value_type_options.multiple', true))
             ->add(BooleanFilter::new('programSent', 'is_receiving_festival_program'))
+            ->add(ProgramPostingsRecipientFilter::new('programPostingsRecipient'))
         ;
 
         $filters
@@ -307,7 +309,7 @@ class StructureCrudController extends AbstractCrudController
                         })
                     ],
                 ])
-                //->onlyWhenUpdating()
+                ->onlyOnForms()
                 ,
             BooleanField::new('programSent', 'Reçoit le programme du festival')->renderAsSwitch(false)->hideOnForm(),
 
