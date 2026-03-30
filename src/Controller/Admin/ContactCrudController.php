@@ -592,35 +592,40 @@ class ContactCrudController extends AbstractCrudController
             ->setWorksheetTitle('Contacts')
             ->getContactsSpreadsheet($entities, $fields);
 
+        $spreadsheet = $this->entitySpreadsheetGenerator
+        ->setValueReplacements($replacements)
+        ->setWorksheetTitle('Contacts')
+        ->getContactsSpreadsheet($entities, $fields);
+
         $writer = new Xlsx($spreadsheet);
 
-        // Nettoyage des tampons de sortie
-        if (ob_get_level()) {
-            ob_end_clean();
-        }
-
-        $response = new StreamedResponse(
-            function () use ($writer) {
-                $writer->save('php://output');
+        $response = new StreamedResponse(function () use ($writer, $spreadsheet) {
+            // Nettoyage complet des buffers ouverts
+            while (ob_get_level() > 0) {
+                ob_end_clean();
             }
+
+            $writer->save('php://output');
+
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet, $writer);
+        });
+
+        $response->headers->set(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         );
 
-        // Définition des en-têtes
-        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(
-            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            "Export_Contacts_" . date('d-m-Y') . ".xlsx"
-        ));
+        $response->headers->set(
+            'Content-Disposition',
+            $response->headers->makeDisposition(
+                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                'Export_Contacts_' . date('d-m-Y') . '.xlsx'
+            )
+        );
 
-        // Désactive la mise en cache pour éviter les problèmes de corruption
-        $response->headers->set('Cache-Control', '');
+        $response->headers->set('Cache-Control', 'max-age=0, must-revalidate, private');
         $response->headers->set('Pragma', 'public');
-
-        // Libération des ressources
-        $response->sendHeaders();
-        $writer->save('php://output');
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet, $writer);
 
         return $response;
     }

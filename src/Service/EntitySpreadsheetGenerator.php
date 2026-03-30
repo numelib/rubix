@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Service;
 
 use App\Entity\Contact;
@@ -285,3 +284,5 @@ class EntitySpreadsheetGenerator
         return $columnsCount;
     }
 }
+
+?>
